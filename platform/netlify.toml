@@ -1,0 +1,29 @@
+# ============================================================
+# Netlify deployment config for Exponent Platform Control Panel
+# ============================================================
+
+[build]
+  base    = "platform"
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "18"
+  CI = "false"
+
+# ── SPA routing fix ──────────────────────────────────────────
+# Without this, refreshing any page gives 404 because Netlify
+# tries to find a real file at that path.
+# This redirects everything to index.html so React handles routing.
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# ── Security headers ─────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
