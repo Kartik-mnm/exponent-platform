@@ -1,7 +1,10 @@
 import axios from "axios";
+import config from "./config";
 
+// Uses REACT_APP_API_URL env var at build time
+// Falls back to live Render URL if not set
 const API = axios.create({
-  baseURL: "https://acadfee.onrender.com",
+  baseURL: config.apiUrl,
 });
 
 API.interceptors.request.use((config) => {
@@ -15,6 +18,7 @@ API.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem("platform_token");
+      localStorage.removeItem("platform_admin");
       window.location.href = "/";
     }
     return Promise.reject(err);
