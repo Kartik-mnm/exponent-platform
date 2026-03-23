@@ -6,16 +6,16 @@
 -- Run AFTER 001_multi_tenant.sql
 -- ============================================================
 
--- IMPORTANT: Replace 'REPLACE_WITH_BCRYPT_HASH' below!
--- Generate hash with Node.js:
---   node -e "const b=require('bcrypt'); b.hash('YOUR_PASSWORD',10).then(console.log)"
-
 INSERT INTO platform_admins (email, password_hash, name)
 VALUES (
   'kartik@exponent.app',
-  'REPLACE_WITH_BCRYPT_HASH',
+  '$2a$10$It6o9sFRVW.wcl0j9nWiIew5xGh9pY9ThYeW3EFO6DPqqF62YEScW',
   'Kartik'
 ) ON CONFLICT (email) DO NOTHING;
+
+-- Login credentials for Exponent Platform:
+-- Email:    kartik@exponent.app
+-- Password: MyPassword123
 
 -- ============================================================
 -- Migration 002 complete.
