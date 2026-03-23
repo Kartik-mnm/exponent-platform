@@ -1,7 +1,8 @@
 import { useState } from "react";
 import API from "../api";
 
-const STEPS = ["Basic Info", "Branding", "Contact", "Features & Plan", "Confirm"];
+// Now 6 steps — added "Admin Account" before Confirm
+const STEPS = ["Basic Info", "Branding", "Contact", "Features & Plan", "Admin Account", "Confirm"];
 const PLANS = ["basic", "pro", "enterprise"];
 const FEATURE_LIST = [
   { key: "attendance",    label: "Attendance",    desc: "Track student attendance" },
@@ -13,12 +14,10 @@ const FEATURE_LIST = [
   { key: "qr_scanner",    label: "QR Scanner",    desc: "QR-based attendance scanner" },
   { key: "reports",       label: "Reports",       desc: "Financial reports & analytics" },
 ];
-
 const PRESET_COLORS = [
   "2563EB","6366F1","8B5CF6","EC4899","EF4444",
   "F59E0B","10B981","06B6D4","0EA5E9","64748B"
 ];
-
 const defaultForm = {
   name: "", slug: "", tagline: "", city: "", state: "",
   phone: "", phone2: "", email: "", website: "", address: "",
@@ -28,6 +27,8 @@ const defaultForm = {
     attendance: true, tests: true, expenses: true, admissions: true,
     notifications: true, id_cards: true, qr_scanner: true, reports: true,
   },
+  // Admin account fields
+  admin_name: "", admin_email: "", admin_password: "",
 };
 
 function Toggle({ checked, onChange }) {
@@ -40,38 +41,115 @@ function Toggle({ checked, onChange }) {
   );
 }
 
+// Auto-generate a strong random password
+function generatePassword() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$";
+  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+}
+
 export default function AcademyWizard({ onClose, onCreated }) {
-  const [step, setStep]   = useState(0);
-  const [form, setForm]   = useState(defaultForm);
-  const [saving, setSaving] = useState(false);
-  const [error, setError]   = useState("");
+  const [step, setStep]         = useState(0);
+  const [form, setForm]         = useState({ ...defaultForm, admin_password: generatePassword() });
+  const [saving, setSaving]     = useState(false);
+  const [error, setError]       = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [createdAcademy, setCreatedAcademy] = useState(null);
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
   const setFeature = (key, val) => setForm((f) => ({
     ...f, features: { ...f.features, [key]: val }
   }));
 
-  // Auto-generate slug from name
   const handleNameChange = (v) => {
     set("name", v);
     set("slug", v.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, ""));
+    // Auto-fill admin name too
+    if (!form.admin_name) set("admin_name", v + " Admin");
   };
 
   const canProceed = () => {
     if (step === 0) return form.name.trim() && form.slug.trim();
+    if (step === 4) return form.admin_name.trim() && form.admin_email.trim() && form.admin_password.trim();
     return true;
   };
 
   const handleCreate = async () => {
     setSaving(true); setError("");
     try {
-      await API.post("/platform/academies", form);
-      onCreated();
+      // Step 1: Create the academy
+      const { data: academy } = await API.post("/platform/academies", {
+        name: form.name, slug: form.slug, tagline: form.tagline,
+        city: form.city, state: form.state, phone: form.phone,
+        phone2: form.phone2, email: form.email, website: form.website,
+        address: form.address, primary_color: form.primary_color,
+        accent_color: form.accent_color, plan: form.plan,
+        max_students: form.max_students, max_branches: form.max_branches,
+        features: form.features,
+      });
+
+      // Step 2: Create the admin user for this academy
+      await API.post(`/platform/academies/${academy.id}/admin`, {
+        name:     form.admin_name,
+        email:    form.admin_email,
+        password: form.admin_password,
+      });
+
+      setCreatedAcademy(academy);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to create academy");
       setSaving(false);
     }
   };
+
+  // Success screen after creation
+  if (createdAcademy) {
+    return (
+      <div className="modal-overlay">
+        <div className="modal" style={{ maxWidth: 480 }}>
+          <div className="modal-body" style={{ textAlign: "center", padding: "40px 32px" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text1)", marginBottom: 8 }}>
+              Academy Created!
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>
+              {createdAcademy.name} is ready to use.
+            </div>
+
+            {/* Credentials box */}
+            <div style={{
+              background: "var(--bg3)", border: "1px solid var(--border)",
+              borderRadius: 10, padding: 18, textAlign: "left", marginBottom: 24
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase",
+                letterSpacing: "0.1em", color: "var(--text3)", marginBottom: 12 }}>
+                Admin Login Credentials
+              </div>
+              {[
+                ["Academy URL", `yourplatform.com/${createdAcademy.slug}`],
+                ["Admin Email", form.admin_email],
+                ["Password", form.admin_password],
+              ].map(([label, value]) => (
+                <div key={label} style={{ display: "flex", justifyContent: "space-between",
+                  padding: "6px 0", borderBottom: "1px solid var(--border)", fontSize: 13 }}>
+                  <span style={{ color: "var(--text3)" }}>{label}</span>
+                  <span style={{ color: "var(--text1)", fontWeight: 600, fontFamily: "monospace" }}>{value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 24 }}>
+              ⚠️ Save these credentials — share them with the academy admin.
+            </div>
+
+            <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}
+              onClick={onCreated}>
+              Done ✓
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay">
@@ -91,9 +169,9 @@ export default function AcademyWizard({ onClose, onCreated }) {
                 onClick={() => i < step && setStep(i)}
               >
                 <div className="step-num">{i < step ? "✓" : i + 1}</div>
-                <div className="step-label" style={{ whiteSpace: "nowrap" }}>{label}</div>
+                <div className="step-label" style={{ whiteSpace: "nowrap", fontSize: 11 }}>{label}</div>
               </div>
-              {i < STEPS.length - 1 && <div className="step-line" style={{ flex: 1, margin: "0 6px" }} />}
+              {i < STEPS.length - 1 && <div className="step-line" style={{ flex: 1, margin: "0 4px" }} />}
             </div>
           ))}
         </div>
@@ -111,14 +189,15 @@ export default function AcademyWizard({ onClose, onCreated }) {
               </div>
               <div className="form-group full">
                 <label>URL Slug * <span style={{ color: "var(--text3)", fontWeight: 400 }}>— used in the portal URL</span></label>
-                <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
                   <span style={{
                     background: "var(--bg4)", border: "1px solid var(--border)", borderRight: "none",
                     padding: "9px 12px", borderRadius: "7px 0 0 7px", color: "var(--text3)", fontSize: 13
                   }}>
                     yourplatform.com/
                   </span>
-                  <input value={form.slug} onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,""))}
+                  <input value={form.slug}
+                    onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,""))}
                     placeholder="brightfuture"
                     style={{ borderRadius: "0 7px 7px 0", borderLeft: "none" }} />
                 </div>
@@ -142,7 +221,6 @@ export default function AcademyWizard({ onClose, onCreated }) {
           {/* Step 1 — Branding */}
           {step === 1 && (
             <div>
-              {/* Live preview */}
               <div style={{
                 background: "var(--bg3)", border: "1px solid var(--border)",
                 borderRadius: 10, padding: 16, marginBottom: 20,
@@ -160,45 +238,38 @@ export default function AcademyWizard({ onClose, onCreated }) {
                   <div style={{ fontWeight: 700, color: "var(--text1)" }}>{form.name || "Academy Name"}</div>
                   <div style={{ fontSize: 11, color: "var(--text3)" }}>{form.tagline || "Your tagline"}</div>
                 </div>
-                <div style={{
-                  marginLeft: "auto", display: "flex", gap: 6, alignItems: "center"
-                }}>
+                <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
                   <div style={{ width: 20, height: 20, borderRadius: 4, background: `#${form.primary_color}` }} />
                   <div style={{ width: 20, height: 20, borderRadius: 4, background: `#${form.accent_color}` }} />
                 </div>
               </div>
-
               <div className="form-grid">
                 <div className="form-group">
                   <label>Primary Color</label>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
                     {PRESET_COLORS.map((c) => (
-                      <div key={c} onClick={() => set("primary_color", c)}
-                        className="color-swatch"
-                        style={{
-                          background: `#${c}`,
+                      <div key={c} onClick={() => set("primary_color", c)} className="color-swatch"
+                        style={{ background: `#${c}`,
                           border: form.primary_color === c ? "2px solid var(--text1)" : "2px solid transparent",
-                          transform: form.primary_color === c ? "scale(1.15)" : "scale(1)"
-                        }} />
+                          transform: form.primary_color === c ? "scale(1.15)" : "scale(1)" }} />
                     ))}
                   </div>
-                  <input value={form.primary_color} onChange={(e) => set("primary_color", e.target.value.replace("#",""))}
-                    placeholder="2563EB" maxLength={6} />
+                  <input value={form.primary_color}
+                    onChange={(e) => set("primary_color", e.target.value.replace("#",""))}
+                    placeholder="6366F1" maxLength={6} />
                 </div>
                 <div className="form-group">
                   <label>Accent Color</label>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
                     {PRESET_COLORS.map((c) => (
-                      <div key={c} onClick={() => set("accent_color", c)}
-                        className="color-swatch"
-                        style={{
-                          background: `#${c}`,
-                          border: form.accent_color === c ? "2px solid var(--text1)" : "2px solid transparent"
-                        }} />
+                      <div key={c} onClick={() => set("accent_color", c)} className="color-swatch"
+                        style={{ background: `#${c}`,
+                          border: form.accent_color === c ? "2px solid var(--text1)" : "2px solid transparent" }} />
                     ))}
                   </div>
-                  <input value={form.accent_color} onChange={(e) => set("accent_color", e.target.value.replace("#",""))}
-                    placeholder="38BDF8" maxLength={6} />
+                  <input value={form.accent_color}
+                    onChange={(e) => set("accent_color", e.target.value.replace("#",""))}
+                    placeholder="A78BFA" maxLength={6} />
                 </div>
               </div>
             </div>
@@ -254,32 +325,73 @@ export default function AcademyWizard({ onClose, onCreated }) {
                     onChange={(e) => set("max_branches", parseInt(e.target.value) || 3)} min={1} />
                 </div>
               </div>
-
               <div className="section-title">Feature Flags</div>
-              <div>
-                {FEATURE_LIST.map((f) => (
-                  <div key={f.key} className="toggle-row">
-                    <div>
-                      <div className="toggle-label">{f.label}</div>
-                      <div className="toggle-desc">{f.desc}</div>
-                    </div>
-                    <Toggle
-                      checked={form.features[f.key] !== false}
-                      onChange={(v) => setFeature(f.key, v)}
-                    />
+              {FEATURE_LIST.map((f) => (
+                <div key={f.key} className="toggle-row">
+                  <div>
+                    <div className="toggle-label">{f.label}</div>
+                    <div className="toggle-desc">{f.desc}</div>
                   </div>
-                ))}
+                  <Toggle checked={form.features[f.key] !== false} onChange={(v) => setFeature(f.key, v)} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Step 4 — Admin Account (NEW) */}
+          {step === 4 && (
+            <div>
+              <div style={{
+                background: "var(--accent-glow)", border: "1px solid var(--accent)",
+                borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "var(--accent)"
+              }}>
+                This creates the <strong>Super Admin</strong> login for {form.name}.
+                They'll use these credentials to log into their academy portal.
+              </div>
+              <div className="form-grid">
+                <div className="form-group full">
+                  <label>Admin Full Name *</label>
+                  <input value={form.admin_name}
+                    onChange={(e) => set("admin_name", e.target.value)}
+                    placeholder="e.g. Rahul Sharma" autoFocus />
+                </div>
+                <div className="form-group full">
+                  <label>Admin Email *</label>
+                  <input type="email" value={form.admin_email}
+                    onChange={(e) => set("admin_email", e.target.value)}
+                    placeholder="admin@brightfuture.in" />
+                </div>
+                <div className="form-group full">
+                  <label>Password *</label>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      type={showPass ? "text" : "password"}
+                      value={form.admin_password}
+                      onChange={(e) => set("admin_password", e.target.value)}
+                      style={{ flex: 1, fontFamily: "monospace" }}
+                    />
+                    <button className="btn btn-ghost btn-sm" onClick={() => setShowPass((s) => !s)}>
+                      {showPass ? "Hide" : "Show"}
+                    </button>
+                    <button className="btn btn-ghost btn-sm"
+                      onClick={() => set("admin_password", generatePassword())}>
+                      ↺ Generate
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>
+                    A strong password has been auto-generated. You can change it or regenerate.
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Step 4 — Confirm */}
-          {step === 4 && (
+          {/* Step 5 — Confirm */}
+          {step === 5 && (
             <div>
-              {/* Preview card */}
               <div style={{
                 background: "var(--bg3)", border: "1px solid var(--border)",
-                borderRadius: 12, padding: 20, marginBottom: 20
+                borderRadius: 12, padding: 20, marginBottom: 16
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
                   <div style={{
@@ -297,14 +409,12 @@ export default function AcademyWizard({ onClose, onCreated }) {
                   </div>
                   <span className="badge badge-blue" style={{ marginLeft: "auto" }}>{form.plan}</span>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
                   {[
                     ["City", form.city || "—"],
                     ["Max Students", form.max_students],
-                    ["Phone", form.phone || "—"],
+                    ["Admin Email", form.admin_email],
                     ["Max Branches", form.max_branches],
-                    ["Email", form.email || "—"],
-                    ["Website", form.website || "—"],
                   ].map(([k, v]) => (
                     <div key={k} style={{ fontSize: 12 }}>
                       <span style={{ color: "var(--text3)" }}>{k}: </span>
@@ -312,7 +422,7 @@ export default function AcademyWizard({ onClose, onCreated }) {
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {FEATURE_LIST.filter((f) => form.features[f.key] !== false).map((f) => (
                     <span key={f.key} className="badge badge-green">{f.label}</span>
                   ))}
