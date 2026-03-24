@@ -6,8 +6,8 @@ import Academies from "./pages/Academies";
 import "./index.css";
 
 const NAV = [
-  { id: "dashboard",  label: "Dashboard",  icon: "▦", group: "main" },
-  { id: "academies",  label: "Academies",  icon: "🏫", group: "main" },
+  { id: "dashboard", label: "Dashboard", icon: "▦" },
+  { id: "academies", label: "Academies", icon: "🏫" },
 ];
 
 function Shell() {
@@ -21,11 +21,18 @@ function Shell() {
 
   return (
     <div className="shell">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="logo-mark">EXPONENT</div>
-          <div className="logo-sub">Platform Control</div>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff", fontWeight: 900, fontSize: 14, flexShrink: 0,
+          }}>E</div>
+          <div>
+            <div className="logo-mark">EXPONENT</div>
+            <div className="logo-sub">Platform Control</div>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -43,9 +50,7 @@ function Shell() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="admin-avatar">
-            {admin.name?.[0]?.toUpperCase() || "K"}
-          </div>
+          <div className="admin-avatar">{admin.name?.[0]?.toUpperCase() || "K"}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="admin-name">{admin.name}</div>
             <div className="admin-role">Platform Owner</div>
@@ -54,7 +59,6 @@ function Shell() {
         </div>
       </aside>
 
-      {/* Main content */}
       <main className="main">
         <Page onNavigate={setPage} />
       </main>
