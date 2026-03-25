@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import Login from "./pages/Login";
+import Landing  from "./pages/Landing";
+import Login    from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Academies from "./pages/Academies";
 import Subscriptions from "./pages/Subscriptions";
@@ -27,15 +28,17 @@ const PAGE_META = {
 function Shell() {
   const { admin, logout } = useAuth();
   const [page, setPage]   = useState("dashboard");
+  const [showLogin, setShowLogin] = useState(false);
 
-  if (!admin) return <Login />;
+  // Show landing if not logged in and not requesting login
+  if (!admin && !showLogin) return <Landing onLogin={() => setShowLogin(true)} />;
+  if (!admin)               return <Login />;
 
   const pages = { dashboard: Dashboard, academies: Academies, subscriptions: Subscriptions, analytics: Analytics, settings: Settings };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
-
-  const mainNav  = NAV.filter(n => n.group === "main");
-  const sysNav   = NAV.filter(n => n.group === "system");
+  const mainNav = NAV.filter(n => n.group === "main");
+  const sysNav  = NAV.filter(n => n.group === "system");
 
   return (
     <div className="shell">
@@ -47,24 +50,20 @@ function Shell() {
             <div className="logo-sub">Platform Control</div>
           </div>
         </div>
-
         <nav className="sidebar-nav">
           <div className="sidebar-section-label">Main</div>
-          {mainNav.map((n) => (
+          {mainNav.map(n => (
             <button key={n.id} className={`nav-btn ${page === n.id ? "active" : ""}`} onClick={() => setPage(n.id)}>
-              <span className="nav-icon">{n.icon}</span>
-              <span>{n.label}</span>
+              <span className="nav-icon">{n.icon}</span><span>{n.label}</span>
             </button>
           ))}
           <div className="sidebar-section-label" style={{ marginTop: 8 }}>System</div>
-          {sysNav.map((n) => (
+          {sysNav.map(n => (
             <button key={n.id} className={`nav-btn ${page === n.id ? "active" : ""}`} onClick={() => setPage(n.id)}>
-              <span className="nav-icon">{n.icon}</span>
-              <span>{n.label}</span>
+              <span className="nav-icon">{n.icon}</span><span>{n.label}</span>
             </button>
           ))}
         </nav>
-
         <div className="sidebar-footer">
           <div className="admin-avatar">{admin.name?.[0]?.toUpperCase() || "A"}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -74,7 +73,6 @@ function Shell() {
           <button className="logout-btn" onClick={logout} title="Sign out">⏻</button>
         </div>
       </aside>
-
       <main className="main">
         <div className="topbar">
           <div>
@@ -87,9 +85,7 @@ function Shell() {
             </div>
           </div>
         </div>
-        <div className="page-body">
-          <Page onNavigate={setPage} />
-        </div>
+        <div className="page-body"><Page onNavigate={setPage} /></div>
       </main>
     </div>
   );
