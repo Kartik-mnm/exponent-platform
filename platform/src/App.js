@@ -3,12 +3,26 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Academies from "./pages/Academies";
+import Subscriptions from "./pages/Subscriptions";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 import "./index.css";
 
 const NAV = [
-  { id: "dashboard", label: "Dashboard", icon: "▦" },
-  { id: "academies", label: "Academies", icon: "🏫" },
+  { id: "dashboard",     label: "Dashboard",     icon: "⬡",  group: "main" },
+  { id: "academies",     label: "Academies",     icon: "🏫",  group: "main" },
+  { id: "subscriptions", label: "Subscriptions", icon: "💳",  group: "main" },
+  { id: "analytics",    label: "Analytics",     icon: "📊",  group: "main" },
+  { id: "settings",     label: "Settings",      icon: "⚙",   group: "system" },
 ];
+
+const PAGE_META = {
+  dashboard:     { title: "Dashboard",      sub: "Platform-wide overview" },
+  academies:     { title: "Academies",      sub: "Manage all onboarded academies" },
+  subscriptions: { title: "Subscriptions",  sub: "Plans, billing & expiry management" },
+  analytics:     { title: "Analytics",      sub: "Usage stats & revenue insights" },
+  settings:      { title: "Settings",       sub: "Platform configuration" },
+};
 
 function Shell() {
   const { admin, logout } = useAuth();
@@ -16,19 +30,18 @@ function Shell() {
 
   if (!admin) return <Login />;
 
-  const pages = { dashboard: Dashboard, academies: Academies };
+  const pages = { dashboard: Dashboard, academies: Academies, subscriptions: Subscriptions, analytics: Analytics, settings: Settings };
   const Page  = pages[page] || Dashboard;
+  const meta  = PAGE_META[page] || {};
+
+  const mainNav  = NAV.filter(n => n.group === "main");
+  const sysNav   = NAV.filter(n => n.group === "system");
 
   return (
     <div className="shell">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", fontWeight: 900, fontSize: 14, flexShrink: 0,
-          }}>E</div>
+          <div className="logo-icon">E</div>
           <div>
             <div className="logo-mark">EXPONENT</div>
             <div className="logo-sub">Platform Control</div>
@@ -36,13 +49,16 @@ function Shell() {
         </div>
 
         <nav className="sidebar-nav">
-          <div className="nav-section-label">Navigation</div>
-          {NAV.map((n) => (
-            <button
-              key={n.id}
-              className={`nav-btn ${page === n.id ? "active" : ""}`}
-              onClick={() => setPage(n.id)}
-            >
+          <div className="sidebar-section-label">Main</div>
+          {mainNav.map((n) => (
+            <button key={n.id} className={`nav-btn ${page === n.id ? "active" : ""}`} onClick={() => setPage(n.id)}>
+              <span className="nav-icon">{n.icon}</span>
+              <span>{n.label}</span>
+            </button>
+          ))}
+          <div className="sidebar-section-label" style={{ marginTop: 8 }}>System</div>
+          {sysNav.map((n) => (
+            <button key={n.id} className={`nav-btn ${page === n.id ? "active" : ""}`} onClick={() => setPage(n.id)}>
               <span className="nav-icon">{n.icon}</span>
               <span>{n.label}</span>
             </button>
@@ -50,26 +66,35 @@ function Shell() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="admin-avatar">{admin.name?.[0]?.toUpperCase() || "K"}</div>
+          <div className="admin-avatar">{admin.name?.[0]?.toUpperCase() || "A"}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="admin-name">{admin.name}</div>
+            <div className="admin-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{admin.name}</div>
             <div className="admin-role">Platform Owner</div>
           </div>
-          <button className="logout-btn" onClick={logout} title="Logout">⏻</button>
+          <button className="logout-btn" onClick={logout} title="Sign out">⏻</button>
         </div>
       </aside>
 
       <main className="main">
-        <Page onNavigate={setPage} />
+        <div className="topbar">
+          <div>
+            <div className="topbar-title">{meta.title}</div>
+            <div className="topbar-sub">{meta.sub}</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ fontSize: 11, color: "var(--text3)", padding: "5px 10px", background: "var(--bg3)", borderRadius: 6, border: "1px solid var(--border)" }}>
+              {new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+            </div>
+          </div>
+        </div>
+        <div className="page-body">
+          <Page onNavigate={setPage} />
+        </div>
       </main>
     </div>
   );
 }
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <Shell />
-    </AuthProvider>
-  );
+  return <AuthProvider><Shell /></AuthProvider>;
 }
