@@ -1,20 +1,23 @@
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import Landing  from "./pages/Landing";
-import Login    from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Academies from "./pages/Academies";
+import Landing      from "./pages/Landing";
+import Login        from "./pages/Login";
+import Dashboard    from "./pages/Dashboard";
+import Academies    from "./pages/Academies";
 import Subscriptions from "./pages/Subscriptions";
-import Analytics from "./pages/Analytics";
-import Settings from "./pages/Settings";
+import Analytics    from "./pages/Analytics";
+import Settings     from "./pages/Settings";
+import GetStarted   from "./pages/GetStarted";
+import Signup       from "./pages/Signup";
+import SignupSuccess from "./pages/SignupSuccess";
 import "./index.css";
 
 const NAV = [
-  { id: "dashboard",     label: "Dashboard",     icon: "⬡",  group: "main" },
-  { id: "academies",     label: "Academies",     icon: "🏫",  group: "main" },
-  { id: "subscriptions", label: "Subscriptions", icon: "💳",  group: "main" },
-  { id: "analytics",    label: "Analytics",     icon: "📊",  group: "main" },
-  { id: "settings",     label: "Settings",      icon: "⚙",   group: "system" },
+  { id: "dashboard",     label: "Dashboard",     icon: "\u2B21",  group: "main" },
+  { id: "academies",     label: "Academies",     icon: "\uD83C\uDFEB",  group: "main" },
+  { id: "subscriptions", label: "Subscriptions", icon: "\uD83D\uDCB3",  group: "main" },
+  { id: "analytics",    label: "Analytics",     icon: "\uD83D\uDCCA",  group: "main" },
+  { id: "settings",     label: "Settings",      icon: "\u2699",   group: "system" },
 ];
 
 const PAGE_META = {
@@ -25,15 +28,52 @@ const PAGE_META = {
   settings:      { title: "Settings",       sub: "Platform configuration" },
 };
 
+// ── Admin shell (shown when logged in) ───────────────────────────────────────────
 function Shell() {
   const { admin, logout } = useAuth();
   const [page, setPage]   = useState("dashboard");
-  const [showLogin, setShowLogin] = useState(false);
+  // view: "landing" | "get-started" | "signup" | "signup-success" | "login"
+  const [view, setView]   = useState("landing");
+  const [signupData, setSignupData] = useState(null);
 
-  // Show landing if not logged in and not requesting login
-  if (!admin && !showLogin) return <Landing onLogin={() => setShowLogin(true)} />;
-  if (!admin)               return <Login />;
+  // ── Onboarding flow (not yet logged into admin panel) ─────────────────────
+  if (!admin) {
+    if (view === "get-started")
+      return (
+        <GetStarted
+          onBack={() => setView("landing")}
+          onSignup={() => setView("signup")}
+        />
+      );
 
+    if (view === "signup")
+      return (
+        <Signup
+          onBack={() => setView("get-started")}
+          onSuccess={(data) => { setSignupData(data); setView("signup-success"); }}
+        />
+      );
+
+    if (view === "signup-success")
+      return (
+        <SignupSuccess
+          data={signupData}
+          onLogin={() => setView("login")}
+        />
+      );
+
+    if (view === "login") return <Login />;
+
+    // Default: landing page
+    return (
+      <Landing
+        onLogin={() => setView("login")}
+        onGetStarted={() => setView("get-started")}
+      />
+    );
+  }
+
+  // ── Logged-in admin panel ─────────────────────────────────────────────────
   const pages = { dashboard: Dashboard, academies: Academies, subscriptions: Subscriptions, analytics: Analytics, settings: Settings };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
