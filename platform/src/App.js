@@ -8,6 +8,8 @@ import Subscriptions from "./pages/Subscriptions";
 import Analytics    from "./pages/Analytics";
 import Settings     from "./pages/Settings";
 import GetStarted   from "./pages/GetStarted";
+import Signup       from "./pages/Signup";
+import SignupSuccess from "./pages/SignupSuccess";
 import "./index.css";
 
 const NAV = [
@@ -26,21 +28,46 @@ const PAGE_META = {
   settings:      { title: "Settings",       sub: "Platform configuration" },
 };
 
-// ── Admin shell (shown when logged in) ───────────────────────────────────────────────
+// Where academy owners go after signup to manage their academy
+const ACADEMY_APP = "https://acadfee.onrender.com";
+
+// ── Admin shell ───────────────────────────────────────────────────────────────
 function Shell() {
   const { admin, logout } = useAuth();
   const [page, setPage]   = useState("dashboard");
-  // view: "landing" | "get-started" | "login"
+  // view: "landing" | "get-started" | "signup" | "signup-success" | "login"
   const [view, setView]   = useState("landing");
+  const [signupData, setSignupData] = useState(null);
 
-  // ── Public flow (not yet logged into admin panel) ───────────────────────
+  // ── Public flow (not yet logged into admin panel) ─────────────────────────
   if (!admin) {
     if (view === "get-started")
-      return <GetStarted onBack={() => setView("landing")} />;
+      return (
+        <GetStarted
+          onBack={() => setView("landing")}
+          onSignup={() => setView("signup")}
+        />
+      );
+
+    if (view === "signup")
+      return (
+        <Signup
+          onBack={() => setView("get-started")}
+          onSuccess={(data) => { setSignupData(data); setView("signup-success"); }}
+        />
+      );
+
+    if (view === "signup-success")
+      return (
+        <SignupSuccess
+          data={signupData}
+          // Send academy owner to their own academy dashboard, not the platform panel
+          onLogin={() => { window.location.href = ACADEMY_APP; }}
+        />
+      );
 
     if (view === "login") return <Login />;
 
-    // Default: landing page
     return (
       <Landing
         onLogin={() => setView("login")}
@@ -49,7 +76,7 @@ function Shell() {
     );
   }
 
-  // ── Logged-in admin panel ───────────────────────────────────────────────
+  // ── Logged-in admin panel ─────────────────────────────────────────────────
   const pages = { dashboard: Dashboard, academies: Academies, subscriptions: Subscriptions, analytics: Analytics, settings: Settings };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
