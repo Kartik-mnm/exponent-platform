@@ -10,7 +10,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "CI=false react-scripts build",
+    "vercel-build": "CI=false react-scripts build"
   },
   "proxy": "https://acadfee.onrender.com",
   "browserslist": {
