@@ -16,10 +16,11 @@ const C = {
   yel:     "#f59e0b",
 };
 
-// Your WhatsApp number (international format, no +)
 const WHATSAPP_NUMBER = "918956419453";
+// Academy app URL — where users actually manage their academy
+const ACADEMY_APP = "https://acadfee.onrender.com";
 
-export default function GetStarted({ onSignup, onBack }) {
+export default function GetStarted({ onBack }) {
   return (
     <div style={{
       minHeight: "100vh",
@@ -74,11 +75,8 @@ export default function GetStarted({ onSignup, onBack }) {
           gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
           gap: 16,
         }}>
-          {/* Option 1: Quick Setup */}
           <QuickSetupCard />
-
-          {/* Option 2: Create Instantly */}
-          <CreateInstantlyCard onSignup={onSignup} />
+          <CreateInstantlyCard />
         </div>
 
         <p style={{
@@ -91,9 +89,9 @@ export default function GetStarted({ onSignup, onBack }) {
   );
 }
 
-// ── Quick Setup Card ─────────────────────────────────────────────────────
+// ── Quick Setup Card ──────────────────────────────────────────────
 function QuickSetupCard() {
-  const [step, setStep] = useState("idle"); // idle | form | done
+  const [step, setStep] = useState("idle");
   const [form, setForm] = useState({ name: "", phone: "", academy_name: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -101,26 +99,21 @@ function QuickSetupCard() {
   const handleSubmit = async () => {
     setError("");
     if (!form.name.trim() || !form.phone.trim() || !form.academy_name.trim()) {
-      setError("All fields are required.");
-      return;
+      setError("All fields are required."); return;
     }
     if (!/^[6-9]\d{9}$/.test(form.phone.replace(/\s/g, ""))) {
-      setError("Enter a valid 10-digit Indian mobile number.");
-      return;
+      setError("Enter a valid 10-digit Indian mobile number."); return;
     }
     setLoading(true);
     try {
-      const API = process.env.REACT_APP_API_URL ||
-        (window.location.hostname === "localhost" ? "http://localhost:5000" : "https://acadfee.onrender.com");
-      await fetch(`${API}/api/onboarding/lead`, {
+      await fetch(`${ACADEMY_APP}/api/onboarding/lead`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       setStep("done");
     } catch (_) {
-      // Even on network error, show success — lead will reach via WhatsApp fallback
-      setStep("done");
+      setStep("done"); // Show success regardless — WhatsApp is fallback
     } finally {
       setLoading(false);
     }
@@ -139,7 +132,6 @@ function QuickSetupCard() {
       display: "flex", flexDirection: "column", gap: 16,
       position: "relative", overflow: "hidden",
     }}>
-      {/* top accent line */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0,
         height: 3, background: `linear-gradient(90deg, ${C.yel}, ${C.grn})`,
@@ -162,49 +154,29 @@ function QuickSetupCard() {
       </div>
 
       {step === "idle" && (
-        <button
-          onClick={() => setStep("form")}
-          style={{
-            width: "100%", padding: "11px", borderRadius: 10,
-            border: `1px solid ${C.yel}44`,
-            background: `${C.yel}12`, color: C.yel,
-            fontWeight: 700, fontSize: 14, cursor: "pointer",
-          }}
-        >
+        <button onClick={() => setStep("form")} style={{
+          width: "100%", padding: "11px", borderRadius: 10,
+          border: `1px solid ${C.yel}44`,
+          background: `${C.yel}12`, color: C.yel,
+          fontWeight: 700, fontSize: 14, cursor: "pointer",
+        }}>
           Submit My Details →
         </button>
       )}
 
       {step === "form" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <Input
-            placeholder="Full Name *"
-            value={form.name}
-            onChange={v => setForm(f => ({ ...f, name: v }))}
-          />
-          <Input
-            placeholder="Phone Number *"
-            type="tel"
-            value={form.phone}
-            onChange={v => setForm(f => ({ ...f, phone: v }))}
-          />
-          <Input
-            placeholder="Academy Name *"
-            value={form.academy_name}
-            onChange={v => setForm(f => ({ ...f, academy_name: v }))}
-          />
+          <Input placeholder="Full Name *" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} />
+          <Input placeholder="Phone Number *" type="tel" value={form.phone} onChange={v => setForm(f => ({ ...f, phone: v }))} />
+          <Input placeholder="Academy Name *" value={form.academy_name} onChange={v => setForm(f => ({ ...f, academy_name: v }))} />
           {error && <div style={{ fontSize: 12, color: "#f87171" }}>{error}</div>}
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            style={{
-              padding: "11px", borderRadius: 10, border: "none",
-              background: loading ? C.border2 : `${C.yel}22`,
-              color: loading ? C.t3 : C.yel,
-              fontWeight: 700, fontSize: 14,
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
-          >
+          <button onClick={handleSubmit} disabled={loading} style={{
+            padding: "11px", borderRadius: 10, border: "none",
+            background: loading ? C.border2 : `${C.yel}22`,
+            color: loading ? C.t3 : C.yel,
+            fontWeight: 700, fontSize: 14,
+            cursor: loading ? "not-allowed" : "pointer",
+          }}>
             {loading ? "Sending..." : "We'll Contact You →"}
           </button>
         </div>
@@ -216,20 +188,12 @@ function QuickSetupCard() {
           <div style={{ fontSize: 14, fontWeight: 700, color: C.grn, marginBottom: 8 }}>
             Got it! We'll contact you within 24 hours.
           </div>
-          <a
-            href={waLink}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              fontSize: 13, color: C.grn,
-              background: `${C.grn}14`, border: `1px solid ${C.grn}30`,
-              borderRadius: 8, padding: "8px 16px", textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
-            &#128172; Also reach us on WhatsApp
-          </a>
+          <a href={waLink} target="_blank" rel="noreferrer" style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: 13, color: C.grn,
+            background: `${C.grn}14`, border: `1px solid ${C.grn}30`,
+            borderRadius: 8, padding: "8px 16px", textDecoration: "none", fontWeight: 600,
+          }}>&#128172; Also reach us on WhatsApp</a>
         </div>
       )}
 
@@ -240,8 +204,8 @@ function QuickSetupCard() {
   );
 }
 
-// ── Create Instantly Card ──────────────────────────────────────────────
-function CreateInstantlyCard({ onSignup }) {
+// ── Create Instantly Card ──────────────────────────────────────────
+function CreateInstantlyCard() {
   return (
     <div style={{
       background: `linear-gradient(135deg, ${C.acc}12, ${C.pur}0a)`,
@@ -251,7 +215,6 @@ function CreateInstantlyCard({ onSignup }) {
       position: "relative", overflow: "hidden",
       boxShadow: `0 16px 56px ${C.acc}18`,
     }}>
-      {/* Popular badge */}
       <div style={{
         position: "absolute", top: 14, right: 14,
         background: `linear-gradient(135deg, ${C.acc}, ${C.pur})`,
@@ -275,17 +238,19 @@ function CreateInstantlyCard({ onSignup }) {
         </div>
       </div>
 
-      <button
-        onClick={onSignup}
+      {/* Opens acadfee.onrender.com/signup — the actual academy app */}
+      <a
+        href={`${ACADEMY_APP}/signup`}
         style={{
-          width: "100%", padding: "12px", borderRadius: 10, border: "none",
+          display: "block", width: "100%", padding: "12px", borderRadius: 10,
           background: `linear-gradient(135deg, ${C.acc}, ${C.pur})`,
           color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
           boxShadow: `0 6px 24px ${C.acc}44`,
+          textDecoration: "none", textAlign: "center", boxSizing: "border-box",
         }}
       >
         &#128640; Create My Academy →
-      </button>
+      </a>
 
       <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.5 }}>
         &#10003; Ready in 2 minutes &nbsp;&#10003; 7-day free trial &nbsp;&#10003; No credit card
@@ -294,7 +259,6 @@ function CreateInstantlyCard({ onSignup }) {
   );
 }
 
-// ── Shared input component ─────────────────────────────────────────────────────
 function Input({ placeholder, value, onChange, type = "text" }) {
   return (
     <input
