@@ -1,54 +1,26 @@
 import { useState, useEffect } from "react";
 
 const C = {
-  bg:      "#07090f",
-  bg2:     "#0d1117",
-  bg3:     "#131720",
-  border:  "#1e2535",
-  border2: "#28304a",
-  t1:      "#eef1fb",
-  t2:      "#8892b5",
-  t3:      "#454f72",
-  acc:     "#6366f1",
-  acc2:    "#818cf8",
-  grn:     "#10b981",
-  yel:     "#f59e0b",
-  red:     "#ef4444",
-  pur:     "#a855f7",
-  cyn:     "#06b6d4",
+  bg:"#07090f",bg2:"#0d1117",bg3:"#131720",
+  border:"#1e2535",border2:"#28304a",
+  t1:"#eef1fb",t2:"#8892b5",t3:"#454f72",
+  acc:"#6366f1",acc2:"#818cf8",
+  grn:"#10b981",yel:"#f59e0b",red:"#ef4444",pur:"#a855f7",cyn:"#06b6d4",
 };
 
-const Pill = ({ children, color = C.acc }) => (
-  <span style={{
-    display:"inline-flex",alignItems:"center",gap:6,
-    padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,
-    background:`${color}18`,color,border:`1px solid ${color}33`,letterSpacing:"0.04em",
-  }}>
+const Pill = ({ children, color=C.acc }) => (
+  <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:`${color}18`,color,border:`1px solid ${color}33`,letterSpacing:"0.04em"}}>
     <span style={{width:6,height:6,borderRadius:"50%",background:color,display:"inline-block"}} />
     {children}
   </span>
 );
 
-// Primary CTA — routes to onboarding flow
 const PrimaryBtn = ({ children, onClick, large }) => (
-  <button onClick={onClick} style={{
-    display:"inline-flex",alignItems:"center",gap:8,
-    padding: large ? "14px 32px" : "10px 22px",
-    borderRadius:10,fontWeight:700,fontSize: large ? 15 : 14,
-    cursor:"pointer",border:"none",
-    background:`linear-gradient(135deg,${C.acc},${C.pur})`,
-    color:"#fff",boxShadow:`0 8px 32px ${C.acc}44`,
-    transition:"all 0.2s",
-  }}>{children}</button>
+  <button onClick={onClick} style={{display:"inline-flex",alignItems:"center",gap:8,padding:large?"14px 32px":"10px 22px",borderRadius:10,fontWeight:700,fontSize:large?15:14,cursor:"pointer",border:"none",background:`linear-gradient(135deg,${C.acc},${C.pur})`,color:"#fff",boxShadow:`0 8px 32px ${C.acc}44`,transition:"all 0.2s"}}>{children}</button>
 );
 
 const GhostBtn = ({ children, onClick, href }) => {
-  const s = {
-    display:"inline-flex",alignItems:"center",gap:8,
-    padding:"10px 22px",borderRadius:10,fontWeight:700,fontSize:14,
-    cursor:"pointer",background:"transparent",color:C.t2,
-    border:`1px solid ${C.border2}`,textDecoration:"none",transition:"all 0.2s",
-  };
+  const s = {display:"inline-flex",alignItems:"center",gap:8,padding:"10px 22px",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",background:"transparent",color:C.t2,border:`1px solid ${C.border2}`,textDecoration:"none",transition:"all 0.2s"};
   if (href) return <a href={href} style={s}>{children}</a>;
   return <button onClick={onClick} style={s}>{children}</button>;
 };
@@ -61,7 +33,6 @@ const SecHeading = ({ label, title, sub }) => (
   </div>
 );
 
-// ── NAVBAR
 function Navbar({ onGetStarted, onLogin }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -70,93 +41,57 @@ function Navbar({ onGetStarted, onLogin }) {
     return () => window.removeEventListener("scroll", fn);
   }, []);
   return (
-    <nav style={{
-      position:"fixed",top:0,left:0,right:0,zIndex:100,
-      padding:"0 5%",height:64,
-      display:"flex",alignItems:"center",justifyContent:"space-between",
-      background: scrolled ? `${C.bg}ee` : "transparent",
-      backdropFilter: scrolled ? "blur(20px)" : "none",
-      borderBottom: scrolled ? `1px solid ${C.border}` : "1px solid transparent",
-      transition:"all 0.3s",
-    }}>
+    <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 5%",height:64,display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled?`${C.bg}ee`:"transparent",backdropFilter:scrolled?"blur(20px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent",transition:"all 0.3s"}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{
-          width:34,height:34,borderRadius:9,
-          background:`linear-gradient(135deg,${C.acc},${C.pur})`,
-          display:"flex",alignItems:"center",justifyContent:"center",
-          color:"#fff",fontWeight:900,fontSize:15,
-          boxShadow:`0 4px 14px ${C.acc}55`,
-        }}>E</div>
+        <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.acc},${C.pur})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:900,fontSize:15,boxShadow:`0 4px 14px ${C.acc}55`}}>E</div>
         <div>
-          <div style={{fontSize:15,fontWeight:800,letterSpacing:"0.06em",
-            background:`linear-gradient(135deg,${C.acc2},${C.pur})`,
-            WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>EXPONENT</div>
+          <div style={{fontSize:15,fontWeight:800,letterSpacing:"0.06em",background:`linear-gradient(135deg,${C.acc2},${C.pur})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>EXPONENT</div>
           <div style={{fontSize:9,color:C.t3,letterSpacing:"0.1em",textTransform:"uppercase"}}>Academy OS</div>
         </div>
       </div>
       <div style={{display:"flex",gap:28,alignItems:"center"}}>
         {["Features","Pricing","How It Works","FAQ"].map(l => (
-          <a key={l} href={`#${l.toLowerCase().replace(/ /g,"-")}`}
-            style={{fontSize:13,color:C.t2,textDecoration:"none",fontWeight:500}}>{l}</a>
+          <a key={l} href={`#${l.toLowerCase().replace(/ /g,"-")}`} style={{fontSize:13,color:C.t2,textDecoration:"none",fontWeight:500}}>{l}</a>
         ))}
       </div>
       <div style={{display:"flex",gap:10,alignItems:"center"}}>
         <button onClick={onLogin} style={{background:"none",border:"none",cursor:"pointer",fontSize:13,color:C.t2,fontWeight:500}}>Sign In</button>
-        <PrimaryBtn onClick={onGetStarted}>Get Started Free \u2192</PrimaryBtn>
+        <PrimaryBtn onClick={onGetStarted}>Get Started Free →</PrimaryBtn>
       </div>
     </nav>
   );
 }
 
-// ── HERO
 function Hero({ onGetStarted }) {
   return (
-    <section style={{
-      minHeight:"100vh",display:"flex",alignItems:"center",
-      justifyContent:"center",textAlign:"center",
-      padding:"120px 5% 80px",
-      background:`radial-gradient(ellipse 80% 60% at 50% -20%,${C.acc}18 0%,transparent 70%)`,
-      position:"relative",overflow:"hidden",
-    }}>
-      <div style={{
-        position:"absolute",inset:0,zIndex:0,
-        backgroundImage:`linear-gradient(${C.border}44 1px,transparent 1px),linear-gradient(90deg,${C.border}44 1px,transparent 1px)`,
-        backgroundSize:"60px 60px",
-        maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",
-        WebkitMaskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",
-      }} />
+    <section style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"120px 5% 80px",background:`radial-gradient(ellipse 80% 60% at 50% -20%,${C.acc}18 0%,transparent 70%)`,position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",inset:0,zIndex:0,backgroundImage:`linear-gradient(${C.border}44 1px,transparent 1px),linear-gradient(90deg,${C.border}44 1px,transparent 1px)`,backgroundSize:"60px 60px",maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",WebkitMaskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)"}} />
       <div style={{position:"relative",zIndex:1,maxWidth:800,margin:"0 auto"}}>
         <div style={{marginBottom:28}}>
-          <span style={{
-            display:"inline-flex",alignItems:"center",gap:8,
-            padding:"6px 16px",borderRadius:20,
-            background:`${C.grn}14`,border:`1px solid ${C.grn}33`,
-            fontSize:12,color:C.grn,fontWeight:600,
-          }}>\u2728 Trusted by 40+ academies across India</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:8,padding:"6px 16px",borderRadius:20,background:`${C.grn}14`,border:`1px solid ${C.grn}33`,fontSize:12,color:C.grn,fontWeight:600}}>
+            ✨ Trusted by 40+ academies across India
+          </span>
         </div>
-        <h1 style={{
-          fontSize:"clamp(36px,6vw,64px)",
-          fontWeight:900,lineHeight:1.1,letterSpacing:"-1.5px",color:C.t1,marginBottom:20,
-        }}>
+        <h1 style={{fontSize:"clamp(36px,6vw,64px)",fontWeight:900,lineHeight:1.1,letterSpacing:"-1.5px",color:C.t1,marginBottom:20}}>
           Run Your Academy<br />
           <span style={{background:`linear-gradient(135deg,${C.acc2},${C.pur})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-            Like a Pro \u2014 Not a Spreadsheet.
+            Like a Pro — Not a Spreadsheet.
           </span>
         </h1>
         <p style={{fontSize:19,color:C.t2,maxWidth:580,margin:"0 auto 40px",lineHeight:1.7}}>
           Exponent is the all-in-one academy management software for coaching institutes.
-          Manage students, fees, attendance, and parent notifications \u2014 all in one place.
+          Manage students, fees, attendance, and parent notifications — all in one place.
         </p>
         <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginBottom:56}}>
-          <PrimaryBtn large onClick={onGetStarted}>\uD83D\uDE80 Start Free Trial \u2014 7 Days</PrimaryBtn>
-          <GhostBtn href="#how-it-works">\u25B6 See How It Works</GhostBtn>
+          <PrimaryBtn large onClick={onGetStarted}>🚀 Start Free Trial — 7 Days</PrimaryBtn>
+          <GhostBtn href="#how-it-works">▶ See How It Works</GhostBtn>
         </div>
         <div style={{display:"flex",gap:48,justifyContent:"center",flexWrap:"wrap",paddingTop:40,borderTop:`1px solid ${C.border}`}}>
           {[
-            {v:"40+",l:"Academies",i:"\uD83C\uDFEB"},
-            {v:"2,000+",l:"Students Managed",i:"\uD83C\uDF93"},
-            {v:"98%",l:"Fee Collection Rate",i:"\uD83D\uDCB0"},
-            {v:"4.9\u2605",l:"Average Rating",i:"\u2B50"},
+            {v:"40+",l:"Academies",i:"🏫"},
+            {v:"2,000+",l:"Students Managed",i:"🎓"},
+            {v:"98%",l:"Fee Collection Rate",i:"💰"},
+            {v:"4.9★",l:"Average Rating",i:"⭐"},
           ].map(s => (
             <div key={s.l} style={{textAlign:"center"}}>
               <div style={{fontSize:28,fontWeight:800,color:C.t1}}>{s.i} {s.v}</div>
@@ -169,34 +104,33 @@ function Hero({ onGetStarted }) {
   );
 }
 
-// ── DASHBOARD PREVIEW
 function DashPreview() {
   const stats = [
-    {l:"Active Students",v:"247",c:C.acc,i:"\uD83C\uDF93"},
-    {l:"Fees Collected",v:"\u20B91.8L",c:C.grn,i:"\uD83D\uDCB0"},
-    {l:"Pending Dues",v:"\u20B924K",c:C.yel,i:"\u26A0\uFE0F"},
-    {l:"Attendance",v:"94%",c:C.cyn,i:"\u2705"},
+    {l:"Active Students",v:"247",c:C.acc,i:"🎓"},
+    {l:"Fees Collected",v:"₹1.8L",c:C.grn,i:"💰"},
+    {l:"Pending Dues",v:"₹24K",c:C.yel,i:"⚠️"},
+    {l:"Attendance",v:"94%",c:C.cyn,i:"✅"},
   ];
   const rows = [
-    {n:"Priya Sharma",b:"JEE Adv.",s:"paid",d:"\u20B90"},
-    {n:"Rahul Deshmukh",b:"NEET",s:"pending",d:"\u20B92,500"},
-    {n:"Sneha Patil",b:"Class 10",s:"paid",d:"\u20B90"},
-    {n:"Arjun Verma",b:"JEE Main",s:"partial",d:"\u20B91,200"},
-    {n:"Kavya Singh",b:"Foundation",s:"paid",d:"\u20B90"},
+    {n:"Priya Sharma",b:"JEE Adv.",s:"paid",d:"₹0"},
+    {n:"Rahul Deshmukh",b:"NEET",s:"pending",d:"₹2,500"},
+    {n:"Sneha Patil",b:"Class 10",s:"paid",d:"₹0"},
+    {n:"Arjun Verma",b:"JEE Main",s:"partial",d:"₹1,200"},
+    {n:"Kavya Singh",b:"Foundation",s:"paid",d:"₹0"},
   ];
   const sc = {paid:C.grn,pending:C.red,partial:C.yel};
   return (
     <section style={{padding:"0 5% 80px"}}>
       <div style={{maxWidth:1100,margin:"0 auto"}}>
-        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:`0 40px 120px rgba(0,0,0,0.6)`}}>
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:"0 40px 120px rgba(0,0,0,0.6)"}}>
           <div style={{background:C.bg3,padding:"12px 16px",display:"flex",alignItems:"center",gap:8,borderBottom:`1px solid ${C.border}`}}>
             {["#ff5f57","#febc2e","#28c840"].map(c => <div key={c} style={{width:12,height:12,borderRadius:"50%",background:c}} />)}
-            <div style={{flex:1,background:C.bg,borderRadius:6,padding:"5px 12px",fontSize:11,color:C.t3,marginLeft:8}}>expoent.netlify.app/dashboard</div>
+            <div style={{flex:1,background:C.bg,borderRadius:6,padding:"5px 12px",fontSize:11,color:C.t3,marginLeft:8}}>exponent-platform.vercel.app/dashboard</div>
           </div>
           <div style={{display:"flex",minHeight:360}}>
             <div style={{width:180,background:C.bg,borderRight:`1px solid ${C.border}`,padding:"16px 10px",flexShrink:0}}>
               <div style={{fontSize:11,fontWeight:800,color:C.acc,letterSpacing:"0.1em",padding:"4px 8px",marginBottom:8}}>EXPONENT</div>
-              {["\uD83D\uDD35 Dashboard","\uD83D\uDC64 Students","\uD83D\uDCB3 Payments","\u2705 Attendance","\uD83D\uDCCA Reports"].map((item,i) => (
+              {["🔵 Dashboard","👤 Students","💳 Payments","✅ Attendance","📊 Reports"].map((item,i) => (
                 <div key={item} style={{padding:"7px 10px",borderRadius:7,fontSize:12,color:i===0?C.acc:C.t3,background:i===0?`${C.acc}14`:"transparent",marginBottom:2,fontWeight:i===0?600:400}}>{item}</div>
               ))}
             </div>
@@ -219,7 +153,7 @@ function DashPreview() {
                       <div style={{fontSize:10,color:C.t3}}>{r.b}</div>
                     </div>
                     <span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:`${sc[r.s]}18`,color:sc[r.s],fontWeight:600}}>{r.s}</span>
-                    <div style={{fontSize:11,color:r.d==="\u20B90"?C.grn:C.red,fontWeight:700}}>{r.d}</div>
+                    <div style={{fontSize:11,color:r.d==="₹0"?C.grn:C.red,fontWeight:700}}>{r.d}</div>
                   </div>
                 ))}
               </div>
@@ -231,7 +165,6 @@ function DashPreview() {
   );
 }
 
-// ── TRUSTED BY
 function TrustedBy() {
   return (
     <section style={{padding:"40px 5%",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
@@ -245,14 +178,13 @@ function TrustedBy() {
   );
 }
 
-// ── FEATURES
 const FEATS = [
-  {icon:"\uD83D\uDC64",color:C.acc,title:"Smart Student Management",desc:"Add, edit, and track every student. Batch assignments, roll numbers, photo ID cards, and QR attendance \u2014 all from one place.",pts:["Student profiles with photos","Batch & branch assignment","QR code ID cards","Parent contact info"]},
-  {icon:"\uD83D\uDCB3",color:C.grn,title:"Automated Fee Collection",desc:"Generate fee records, track dues, and print professional receipts instantly.",pts:["Monthly fee records","Partial payment tracking","Printable receipts","Outstanding dues dashboard"]},
-  {icon:"\u2705",color:C.cyn,title:"One-tap Attendance",desc:"Mark attendance in seconds with QR scanner, bulk marking, and auto parent alerts.",pts:["QR-based scanning","Bulk attendance marking","Absent alerts to parents","Monthly attendance reports"]},
-  {icon:"\uD83D\uDD14",color:C.pur,title:"Parent Notifications",desc:"Instantly notify parents about fees, attendance, and test results via push notifications.",pts:["Fee due reminders","Absent day alerts","Exam result sharing","Custom announcements"]},
-  {icon:"\uD83D\uDCCA",color:C.yel,title:"Reports & Analytics",desc:"Get a full view of your academy's financial health, attendance trends, and performance.",pts:["Revenue reports","Attendance analytics","Branch performance","Monthly summaries"]},
-  {icon:"\uD83C\uDFEB",color:C.red,title:"Multi-branch Ready",desc:"Manage multiple branches, assign staff, and track all performance from one login.",pts:["Unlimited branches","Branch-wise reports","Staff role management","Centralized billing"]},
+  {icon:"👤",color:C.acc,title:"Smart Student Management",desc:"Add, edit, and track every student. Batch assignments, roll numbers, photo ID cards, and QR attendance — all from one place.",pts:["Student profiles with photos","Batch & branch assignment","QR code ID cards","Parent contact info"]},
+  {icon:"💳",color:C.grn,title:"Automated Fee Collection",desc:"Generate fee records, track dues, and print professional receipts instantly.",pts:["Monthly fee records","Partial payment tracking","Printable receipts","Outstanding dues dashboard"]},
+  {icon:"✅",color:C.cyn,title:"One-tap Attendance",desc:"Mark attendance in seconds with QR scanner, bulk marking, and auto parent alerts.",pts:["QR-based scanning","Bulk attendance marking","Absent alerts to parents","Monthly attendance reports"]},
+  {icon:"🔔",color:C.pur,title:"Parent Notifications",desc:"Instantly notify parents about fees, attendance, and test results via push notifications.",pts:["Fee due reminders","Absent day alerts","Exam result sharing","Custom announcements"]},
+  {icon:"📊",color:C.yel,title:"Reports & Analytics",desc:"Get a full view of your academy's financial health, attendance trends, and performance.",pts:["Revenue reports","Attendance analytics","Branch performance","Monthly summaries"]},
+  {icon:"🏫",color:C.red,title:"Multi-branch Ready",desc:"Manage multiple branches, assign staff, and track all performance from one login.",pts:["Unlimited branches","Branch-wise reports","Staff role management","Centralized billing"]},
 ];
 
 function Features() {
@@ -263,21 +195,14 @@ function Features() {
         <SecHeading label="Features" title="Built for academies that want to grow, not just survive." sub="Everything your coaching institute needs to run professionally, without the chaos." />
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:20}}>
           {FEATS.map((f,i) => (
-            <div key={f.title}
-              onMouseEnter={() => setHov(i)} onMouseLeave={() => setHov(null)}
-              style={{
-                background:C.bg2,border:`1px solid ${hov===i ? f.color+"55" : C.border}`,
-                borderRadius:16,padding:28,transition:"all 0.25s",
-                transform:hov===i?"translateY(-4px)":"none",
-                boxShadow:hov===i?`0 16px 48px ${f.color}18`:"none",
-              }}>
+            <div key={f.title} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)} style={{background:C.bg2,border:`1px solid ${hov===i?f.color+"55":C.border}`,borderRadius:16,padding:28,transition:"all 0.25s",transform:hov===i?"translateY(-4px)":"none",boxShadow:hov===i?`0 16px 48px ${f.color}18`:"none"}}>
               <div style={{width:48,height:48,borderRadius:12,fontSize:22,background:`${f.color}16`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16,border:`1px solid ${f.color}22`}}>{f.icon}</div>
               <h3 style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:10}}>{f.title}</h3>
               <p style={{fontSize:14,color:C.t2,lineHeight:1.7,marginBottom:16}}>{f.desc}</p>
               <ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:6}}>
                 {f.pts.map(b => (
                   <li key={b} style={{fontSize:13,color:C.t2,display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{color:f.color,fontSize:11,fontWeight:700}}>\u2713</span> {b}
+                    <span style={{color:f.color,fontSize:11,fontWeight:700}}>✓</span> {b}
                   </li>
                 ))}
               </ul>
@@ -289,12 +214,11 @@ function Features() {
   );
 }
 
-// ── HOW IT WORKS
 const STEPS = [
-  {num:"01",icon:"\uD83D\uDD10",color:C.acc,title:"Create Your Academy Account",desc:"Sign up in under 2 minutes. Add your academy name, logo, branches, and staff. No technical setup needed."},
-  {num:"02",icon:"\uD83D\uDC64",color:C.grn,title:"Add Students & Batches",desc:"Import your student list or add them one by one. Assign to batches, generate roll numbers, and print ID cards."},
-  {num:"03",icon:"\uD83D\uDCB3",color:C.pur,title:"Set Up Fee Structures",desc:"Define monthly fees per batch. The system auto-generates fee records every month and tracks who has paid."},
-  {num:"04",icon:"\uD83D\uDE80",color:C.yel,title:"Operate & Grow",desc:"Mark attendance, send notifications, collect payments, and view reports. Your academy runs on autopilot."},
+  {num:"01",icon:"🔐",color:C.acc,title:"Create Your Academy Account",desc:"Sign up in under 2 minutes. Add your academy name, logo, branches, and staff. No technical setup needed."},
+  {num:"02",icon:"👤",color:C.grn,title:"Add Students & Batches",desc:"Import your student list or add them one by one. Assign to batches, generate roll numbers, and print ID cards."},
+  {num:"03",icon:"💳",color:C.pur,title:"Set Up Fee Structures",desc:"Define monthly fees per batch. The system auto-generates fee records every month and tracks who has paid."},
+  {num:"04",icon:"🚀",color:C.yel,title:"Operate & Grow",desc:"Mark attendance, send notifications, collect payments, and view reports. Your academy runs on autopilot."},
 ];
 
 function HowItWorks() {
@@ -320,7 +244,6 @@ function HowItWorks() {
   );
 }
 
-// ── PRICING
 const PLANS = [
   {id:"basic",name:"Starter",price:499,color:C.t2,popular:false,desc:"Perfect for small academies just getting started.",cta:"Start Free Trial",pts:["Up to 100 students","1 branch","Fee management","Basic attendance","Email support","Student ID cards"]},
   {id:"pro",name:"Pro",price:999,color:C.acc,popular:true,desc:"For growing academies that need more power.",cta:"Start Free Trial",pts:["Up to 500 students","Up to 5 branches","Fee + Payment tracking","QR attendance scanner","Parent notifications","Reports & Analytics","Priority support"]},
@@ -335,7 +258,7 @@ function Pricing({ onGetStarted }) {
         <SecHeading label="Pricing" title="Plans that grow with your academy." sub="Simple, transparent pricing. No hidden charges. Cancel anytime." />
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginBottom:48}}>
           <span style={{fontSize:14,color:!annual?C.t1:C.t3,fontWeight:600}}>Monthly</span>
-          <div onClick={() => setAnnual(!annual)} style={{width:48,height:26,borderRadius:13,background:annual?C.acc:C.border2,cursor:"pointer",position:"relative",transition:"background 0.2s"}}>
+          <div onClick={()=>setAnnual(!annual)} style={{width:48,height:26,borderRadius:13,background:annual?C.acc:C.border2,cursor:"pointer",position:"relative",transition:"background 0.2s"}}>
             <div style={{position:"absolute",top:3,left:annual?25:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}} />
           </div>
           <span style={{fontSize:14,color:annual?C.t1:C.t3,fontWeight:600}}>
@@ -344,25 +267,19 @@ function Pricing({ onGetStarted }) {
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20,alignItems:"start"}}>
           {PLANS.map(p => (
-            <div key={p.id} style={{
-              background:p.popular?`linear-gradient(135deg,${C.acc}14,${C.pur}0a)`:C.bg2,
-              border:`2px solid ${p.popular?C.acc:C.border}`,
-              borderRadius:20,padding:32,position:"relative",
-              transform:p.popular?"scale(1.03)":"none",
-              boxShadow:p.popular?`0 24px 80px ${C.acc}22`:"none",
-            }}>
-              {p.popular && <div style={{position:"absolute",top:-13,left:"50%",transform:"translateX(-50%)",background:`linear-gradient(135deg,${C.acc},${C.pur})`,color:"#fff",fontSize:11,fontWeight:700,padding:"4px 16px",borderRadius:20,whiteSpace:"nowrap"}}>\u2B50 MOST POPULAR</div>}
+            <div key={p.id} style={{background:p.popular?`linear-gradient(135deg,${C.acc}14,${C.pur}0a)`:C.bg2,border:`2px solid ${p.popular?C.acc:C.border}`,borderRadius:20,padding:32,position:"relative",transform:p.popular?"scale(1.03)":"none",boxShadow:p.popular?`0 24px 80px ${C.acc}22`:"none"}}>
+              {p.popular && <div style={{position:"absolute",top:-13,left:"50%",transform:"translateX(-50%)",background:`linear-gradient(135deg,${C.acc},${C.pur})`,color:"#fff",fontSize:11,fontWeight:700,padding:"4px 16px",borderRadius:20,whiteSpace:"nowrap"}}>⭐ MOST POPULAR</div>}
               <div style={{fontSize:14,fontWeight:700,color:p.color,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>{p.name}</div>
               <div style={{marginBottom:12}}>
-                <span style={{fontSize:40,fontWeight:900,color:C.t1}}>\u20B9{Math.round(p.price*(annual?0.8:1))}</span>
+                <span style={{fontSize:40,fontWeight:900,color:C.t1}}>₹{Math.round(p.price*(annual?0.8:1))}</span>
                 <span style={{fontSize:14,color:C.t3}}>/{annual?"mo (billed yearly)":"month"}</span>
               </div>
               <p style={{fontSize:14,color:C.t2,marginBottom:24,lineHeight:1.6}}>{p.desc}</p>
-              <button onClick={onGetStarted} style={{width:"100%",padding:"12px",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",border:"none",marginBottom:24,background:p.popular?`linear-gradient(135deg,${C.acc},${C.pur})`:C.bg3,color:p.popular?"#fff":C.t1,boxShadow:p.popular?`0 8px 32px ${C.acc}44`:"none"}}>{p.cta} \u2192</button>
+              <button onClick={onGetStarted} style={{width:"100%",padding:"12px",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",border:"none",marginBottom:24,background:p.popular?`linear-gradient(135deg,${C.acc},${C.pur})`:C.bg3,color:p.popular?"#fff":C.t1,boxShadow:p.popular?`0 8px 32px ${C.acc}44`:"none"}}>{p.cta} →</button>
               <ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:10}}>
                 {p.pts.map(f => (
                   <li key={f} style={{fontSize:13,color:C.t2,display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{color:p.color,fontSize:14,flexShrink:0}}>\u2713</span> {f}
+                    <span style={{color:p.color,fontSize:14,flexShrink:0}}>✓</span> {f}
                   </li>
                 ))}
               </ul>
@@ -375,7 +292,6 @@ function Pricing({ onGetStarted }) {
   );
 }
 
-// ── TESTIMONIALS
 const TESTI = [
   {n:"Rajesh Kulkarni",r:"Director, TargetIIT Classes, Nagpur",a:"R",c:C.acc,t:"Before Exponent, I was chasing students for fees on WhatsApp. Now the system sends reminders automatically and I can see every pending due from my phone. Best investment I made for my academy."},
   {n:"Sunita Deshpande",r:"Owner, BrightFuture Coaching, Pune",a:"S",c:C.grn,t:"Setting up 3 branches used to be a nightmare. With Exponent, I manage all of them from one dashboard. The QR scanner alone saves my staff 30 minutes every single day."},
@@ -392,9 +308,9 @@ function Testimonials() {
           {TESTI.map(t => (
             <div key={t.n} style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:16,padding:28}}>
               <div style={{display:"flex",gap:3,marginBottom:16}}>
-                {[1,2,3,4,5].map(i => <span key={i} style={{color:C.yel}}>\u2605</span>)}
+                {[1,2,3,4,5].map(i => <span key={i} style={{color:C.yel}}>★</span>)}
               </div>
-              <p style={{fontSize:14,color:C.t2,lineHeight:1.8,marginBottom:20,fontStyle:"italic"}}>\u201C{t.t}\u201D</p>
+              <p style={{fontSize:14,color:C.t2,lineHeight:1.8,marginBottom:20,fontStyle:"italic"}}>"{t.t}"</p>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:40,height:40,borderRadius:"50%",background:`${t.c}22`,border:`2px solid ${t.c}44`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:15,color:t.c}}>{t.a}</div>
                 <div>
@@ -410,7 +326,6 @@ function Testimonials() {
   );
 }
 
-// ── FOUNDER STORY
 function FounderStory() {
   return (
     <section style={{padding:"80px 5%"}}>
@@ -419,9 +334,9 @@ function FounderStory() {
         <div style={{fontSize:13,color:C.t3,marginBottom:4}}>FROM THE FOUNDER</div>
         <h3 style={{fontSize:24,fontWeight:800,color:C.t1,marginBottom:20}}>Why I built Exponent</h3>
         <p style={{fontSize:16,color:C.t2,lineHeight:1.9,marginBottom:24}}>
-          \u201CI saw my family\u2019s coaching academy drowning in paperwork \u2014 fee registers, attendance notebooks, parent calls, WhatsApp reminders. It was chaos.
-          I built Exponent to fix exactly that. After 2 years and 40+ academies using it, I know we\u2019re on the right track.
-          We\u2019re not a big Silicon Valley startup. We\u2019re a small team that genuinely understands what coaching academy owners go through every day.\u201D
+          "I saw my family's coaching academy drowning in paperwork — fee registers, attendance notebooks, parent calls, WhatsApp reminders. It was chaos.
+          I built Exponent to fix exactly that. After 2 years and 40+ academies using it, I know we're on the right track.
+          We're not a big Silicon Valley startup. We're a small team that genuinely understands what coaching academy owners go through every day."
         </p>
         <div style={{fontSize:15,fontWeight:700,color:C.t1}}>Kartik Ninawe</div>
         <div style={{fontSize:12,color:C.t3}}>Founder, Exponent Platform</div>
@@ -430,18 +345,17 @@ function FounderStory() {
   );
 }
 
-// ── SECURITY
 function Security() {
   const items = [
-    {i:"\uD83D\uDD12",t:"Bank-grade Security",d:"AES-256 encryption at rest, TLS in transit. Your data is always protected."},
-    {i:"\uD83C\uDDEE\uD83C\uDDF3",t:"Made in India",d:"Built for Indian coaching institutes. GST-ready, INR pricing, Hindi support coming."},
-    {i:"\u2601\uFE0F",t:"99.9% Uptime",d:"Enterprise-grade hosting. Automatic backups every 6 hours. Your data never disappears."},
-    {i:"\uD83D\uDD35",t:"Your Data, Your Control",d:"You own 100% of your data. Export anytime. We never share student data."},
+    {i:"🔒",t:"Bank-grade Security",d:"AES-256 encryption at rest, TLS in transit. Your data is always protected."},
+    {i:"🇮🇳",t:"Made in India",d:"Built for Indian coaching institutes. GST-ready, INR pricing, Hindi support coming."},
+    {i:"☁️",t:"99.9% Uptime",d:"Enterprise-grade hosting. Automatic backups every 6 hours. Your data never disappears."},
+    {i:"🔵",t:"Your Data, Your Control",d:"You own 100% of your data. Export anytime. We never share student data."},
   ];
   return (
     <section style={{padding:"80px 5%",background:C.bg2}}>
       <div style={{maxWidth:1100,margin:"0 auto"}}>
-        <SecHeading label="Security & Privacy" title="Your data is safe with us." sub="We take the security of your academy\u2019s data as seriously as you do." />
+        <SecHeading label="Security & Privacy" title="Your data is safe with us." sub="We take the security of your academy's data as seriously as you do." />
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:20}}>
           {items.map(x => (
             <div key={x.t} style={{background:C.bg3,border:`1px solid ${C.border}`,borderRadius:14,padding:24}}>
@@ -456,7 +370,6 @@ function Security() {
   );
 }
 
-// ── FAQ
 const FAQS = [
   {q:"Is there a free trial?",a:"Yes! Every plan starts with a 7-day free trial. No credit card required."},
   {q:"Can I manage multiple branches?",a:"Absolutely. The Pro and Enterprise plans support multiple branches with their own staff, students, and reports."},
@@ -475,7 +388,7 @@ function FAQ() {
       <div style={{maxWidth:720,margin:"0 auto"}}>
         <SecHeading label="FAQ" title="Frequently Asked Questions." sub="Everything you need to know before getting started." />
         {FAQS.map((f,i) => (
-          <div key={i} onClick={() => setOpen(open===i?null:i)} style={{borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
+          <div key={i} onClick={()=>setOpen(open===i?null:i)} style={{borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"18px 0"}}>
               <span style={{fontSize:15,fontWeight:600,color:C.t1}}>{f.q}</span>
               <span style={{color:C.acc,fontSize:20,fontWeight:300,transform:open===i?"rotate(45deg)":"none",transition:"transform 0.2s",lineHeight:1}}>+</span>
@@ -488,24 +401,24 @@ function FAQ() {
   );
 }
 
-// ── FINAL CTA
 function FinalCTA({ onGetStarted }) {
   return (
     <section style={{padding:"100px 5%",background:`radial-gradient(ellipse 70% 60% at 50% 50%,${C.acc}14 0%,transparent 70%)`,textAlign:"center"}}>
       <div style={{maxWidth:680,margin:"0 auto"}}>
         <h2 style={{fontSize:42,fontWeight:900,color:C.t1,lineHeight:1.2,letterSpacing:"-1px",marginBottom:16}}>Ready to transform your academy?</h2>
-        <p style={{fontSize:17,color:C.t2,lineHeight:1.7,marginBottom:40}}>Join 40+ coaching institutes already running smarter with Exponent. Start your free 7-day trial \u2014 no credit card needed.</p>
+        <p style={{fontSize:17,color:C.t2,lineHeight:1.7,marginBottom:40}}>
+          Join 40+ coaching institutes already running smarter with Exponent. Start your free 7-day trial — no credit card needed.
+        </p>
         <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
-          <PrimaryBtn large onClick={onGetStarted}>\uD83D\uDE80 Start Free Trial \u2014 7 Days</PrimaryBtn>
-          <GhostBtn href="mailto:support@exponent.academy">\uD83D\uDCAC Talk to Us</GhostBtn>
+          <PrimaryBtn large onClick={onGetStarted}>🚀 Start Free Trial — 7 Days</PrimaryBtn>
+          <GhostBtn href="mailto:support@exponent.academy">💬 Talk to Us</GhostBtn>
         </div>
-        <p style={{marginTop:24,fontSize:13,color:C.t3}}>No credit card \u00b7 Setup in under 1 hour \u00b7 Cancel anytime</p>
+        <p style={{marginTop:24,fontSize:13,color:C.t3}}>No credit card · Setup in under 1 hour · Cancel anytime</p>
       </div>
     </section>
   );
 }
 
-// ── FOOTER
 function Footer({ onGetStarted }) {
   return (
     <footer style={{padding:"40px 5% 32px",borderTop:`1px solid ${C.border}`,background:C.bg}}>
@@ -527,7 +440,7 @@ function Footer({ onGetStarted }) {
           ))}
         </div>
         <div style={{borderTop:`1px solid ${C.border}`,paddingTop:24,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
-          <div style={{fontSize:12,color:C.t3}}>\u00A9 2025 Exponent Platform. All rights reserved. Made with \u2764\uFE0F in India.</div>
+          <div style={{fontSize:12,color:C.t3}}>© 2025 Exponent Platform. All rights reserved. Made with ❤️ in India.</div>
           <div style={{display:"flex",gap:20}}>
             {["Privacy Policy","Terms of Service","Security"].map(l => <span key={l} style={{fontSize:12,color:C.t3}}>{l}</span>)}
           </div>
@@ -537,7 +450,6 @@ function Footer({ onGetStarted }) {
   );
 }
 
-// ── MAIN EXPORT
 export default function Landing({ onLogin, onGetStarted }) {
   return (
     <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",WebkitFontSmoothing:"antialiased"}}>
