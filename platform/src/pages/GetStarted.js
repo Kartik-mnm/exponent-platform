@@ -16,7 +16,7 @@ const C = {
 };
 
 const WHATSAPP_NUMBER = "918956419453";
-const API = "https://acadfee-app.onrender.com/";
+const API = "https://app.onrender.com";
 
 // onBack  — go back to landing
 // onSignup — show the Signup page (stays inside this React SPA)
