@@ -1,13 +1,7 @@
-// ============================================================
 // EXPONENT PLATFORM - Central config
-// ============================================================
-
-// Strip any trailing slash from the API URL to prevent
-// double-slash or path-overlap bugs like /atform/auth/login
-const raw = process.env.REACT_APP_API_URL || "https://acadfee.onrender.com";
-
+// Always points to the Render backend, no env var needed.
 const config = {
-  apiUrl: raw.replace(/\/+$/, ""), // remove trailing slashes
+  apiUrl: "https://acadfee.onrender.com",
 };
 
 export default config;

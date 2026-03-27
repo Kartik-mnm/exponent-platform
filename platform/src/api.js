@@ -1,8 +1,9 @@
 import axios from "axios";
-import config from "./config";
 
+// Always use the hardcoded Render URL — no env var that can be misconfigured
 const API = axios.create({
-  baseURL: config.apiUrl,
+  baseURL: "https://acadfee.onrender.com",
+  withCredentials: true,
 });
 
 API.interceptors.request.use((cfg) => {
@@ -14,8 +15,7 @@ API.interceptors.request.use((cfg) => {
 API.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Only auto-redirect on 401 when NOT on the login endpoint.
-    // Previously this fired on login failures too — causing the instant page refresh.
+    // Only auto-redirect on 401 when NOT on the login endpoint
     const url = err.config?.url || "";
     const isLoginRoute = url.includes("/auth/login");
     if (err.response?.status === 401 && !isLoginRoute) {
