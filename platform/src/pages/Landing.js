@@ -6,15 +6,6 @@
     // mailto links must NOT use target="_blank" — it causes a blank black page
     const isMailto = l.href?.startsWith("mailto:");
     const isWhatsApp = l.href?.startsWith("https://wa.me");
-    return (
-      <a
-        key={l.label}
-        href={l.href}
-        target={isMailto ? "_self" : "_blank"}
-        rel={isMailto ? undefined : "noopener noreferrer"}
-        style={style}
-      >
-        {l.label}
-      </a>
-    );
+    const isMailto = l.href?.startsWith("mailto:");
+return <a key={l.label} href={l.href} target={isMailto ? "_self" : "_blank"} rel={isMailto ? undefined : "noopener noreferrer"} style={style}>{l.label}</a>;
   };
