@@ -21,7 +21,7 @@ const PrimaryBtn = ({ children, onClick, large }) => (
 
 const GhostBtn = ({ children, onClick, href }) => {
   const s = {display:"inline-flex",alignItems:"center",gap:8,padding:"10px 22px",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",background:"transparent",color:C.t2,border:`1px solid ${C.border2}`,textDecoration:"none",transition:"all 0.2s"};
-  if (href) return <a href={href} style={s}>{children}</a>;
+  if (href) return <a href={href} target="_blank" rel="noopener noreferrer" style={s}>{children}</a>;
   return <button onClick={onClick} style={s}>{children}</button>;
 };
 
@@ -33,13 +33,28 @@ const SecHeading = ({ label, title, sub }) => (
   </div>
 );
 
+// Smooth scroll helper
+const scrollTo = (id) => {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
 function Navbar({ onGetStarted, onLogin }) {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  const navLinks = [
+    { label: "Features",    id: "features"     },
+    { label: "Pricing",     id: "pricing"       },
+    { label: "How It Works",id: "how-it-works"  },
+    { label: "FAQ",         id: "faq"           },
+  ];
+
   return (
     <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 5%",height:64,display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled?`${C.bg}ee`:"transparent",backdropFilter:scrolled?"blur(20px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent",transition:"all 0.3s"}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -49,9 +64,10 @@ function Navbar({ onGetStarted, onLogin }) {
           <div style={{fontSize:9,color:C.t3,letterSpacing:"0.1em",textTransform:"uppercase"}}>Academy OS</div>
         </div>
       </div>
+      {/* Desktop nav */}
       <div style={{display:"flex",gap:28,alignItems:"center"}}>
-        {["Features","Pricing","How It Works","FAQ"].map(l => (
-          <a key={l} href={`#${l.toLowerCase().replace(/ /g,"-")}`} style={{fontSize:13,color:C.t2,textDecoration:"none",fontWeight:500}}>{l}</a>
+        {navLinks.map(l => (
+          <button key={l.id} onClick={() => scrollTo(l.id)} style={{fontSize:13,color:C.t2,background:"none",border:"none",cursor:"pointer",fontWeight:500,padding:0}}>{l.label}</button>
         ))}
       </div>
       <div style={{display:"flex",gap:10,alignItems:"center"}}>
@@ -84,7 +100,7 @@ function Hero({ onGetStarted }) {
         </p>
         <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginBottom:56}}>
           <PrimaryBtn large onClick={onGetStarted}>🚀 Start Free Trial — 7 Days</PrimaryBtn>
-          <GhostBtn href="#how-it-works">▶ See How It Works</GhostBtn>
+          <GhostBtn onClick={() => scrollTo("how-it-works")}>▶ See How It Works</GhostBtn>
         </div>
         <div style={{display:"flex",gap:48,justifyContent:"center",flexWrap:"wrap",paddingTop:40,borderTop:`1px solid ${C.border}`}}>
           {[
@@ -125,7 +141,7 @@ function DashPreview() {
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:"0 40px 120px rgba(0,0,0,0.6)"}}>
           <div style={{background:C.bg3,padding:"12px 16px",display:"flex",alignItems:"center",gap:8,borderBottom:`1px solid ${C.border}`}}>
             {["#ff5f57","#febc2e","#28c840"].map(c => <div key={c} style={{width:12,height:12,borderRadius:"50%",background:c}} />)}
-            <div style={{flex:1,background:C.bg,borderRadius:6,padding:"5px 12px",fontSize:11,color:C.t3,marginLeft:8}}>exponent-platform.vercel.app/dashboard</div>
+            <div style={{flex:1,background:C.bg,borderRadius:6,padding:"5px 12px",fontSize:11,color:C.t3,marginLeft:8}}>acadfee-app.onrender.com/dashboard</div>
           </div>
           <div style={{display:"flex",minHeight:360}}>
             <div style={{width:180,background:C.bg,borderRight:`1px solid ${C.border}`,padding:"16px 10px",flexShrink:0}}>
@@ -275,7 +291,14 @@ function Pricing({ onGetStarted }) {
                 <span style={{fontSize:14,color:C.t3}}>/{annual?"mo (billed yearly)":"month"}</span>
               </div>
               <p style={{fontSize:14,color:C.t2,marginBottom:24,lineHeight:1.6}}>{p.desc}</p>
-              <button onClick={onGetStarted} style={{width:"100%",padding:"12px",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",border:"none",marginBottom:24,background:p.popular?`linear-gradient(135deg,${C.acc},${C.pur})`:C.bg3,color:p.popular?"#fff":C.t1,boxShadow:p.popular?`0 8px 32px ${C.acc}44`:"none"}}>{p.cta} →</button>
+              {/* "Contact Us" for enterprise, "Start Trial" for others */}
+              {p.id === "enterprise" ? (
+                <a href="mailto:kartik@exponent.app?subject=Enterprise Plan Inquiry" style={{display:"block",width:"100%",padding:"12px",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",border:"none",marginBottom:24,background:C.bg3,color:C.t1,textAlign:"center",textDecoration:"none",boxSizing:"border-box"}}>
+                  Contact Us →
+                </a>
+              ) : (
+                <button onClick={onGetStarted} style={{width:"100%",padding:"12px",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",border:"none",marginBottom:24,background:p.popular?`linear-gradient(135deg,${C.acc},${C.pur})`:C.bg3,color:p.popular?"#fff":C.t1,boxShadow:p.popular?`0 8px 32px ${C.acc}44`:"none"}}>{p.cta} →</button>
+              )}
               <ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:10}}>
                 {p.pts.map(f => (
                   <li key={f} style={{fontSize:13,color:C.t2,display:"flex",alignItems:"center",gap:8}}>
@@ -328,7 +351,7 @@ function Testimonials() {
 
 function FounderStory() {
   return (
-    <section style={{padding:"80px 5%"}}>
+    <section id="about" style={{padding:"80px 5%"}}>
       <div style={{maxWidth:800,margin:"0 auto",textAlign:"center"}}>
         <div style={{width:72,height:72,borderRadius:"50%",background:`linear-gradient(135deg,${C.acc},${C.pur})`,margin:"0 auto 20px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,fontWeight:900,color:"#fff"}}>K</div>
         <div style={{fontSize:13,color:C.t3,marginBottom:4}}>FROM THE FOUNDER</div>
@@ -353,7 +376,7 @@ function Security() {
     {i:"🔵",t:"Your Data, Your Control",d:"You own 100% of your data. Export anytime. We never share student data."},
   ];
   return (
-    <section style={{padding:"80px 5%",background:C.bg2}}>
+    <section id="security" style={{padding:"80px 5%",background:C.bg2}}>
       <div style={{maxWidth:1100,margin:"0 auto"}}>
         <SecHeading label="Security & Privacy" title="Your data is safe with us." sub="We take the security of your academy's data as seriously as you do." />
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:20}}>
@@ -411,7 +434,7 @@ function FinalCTA({ onGetStarted }) {
         </p>
         <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
           <PrimaryBtn large onClick={onGetStarted}>🚀 Start Free Trial — 7 Days</PrimaryBtn>
-          <GhostBtn href="mailto:support@exponent.academy">💬 Talk to Us</GhostBtn>
+          <GhostBtn href="mailto:kartik@exponent.app">💬 Talk to Us</GhostBtn>
         </div>
         <p style={{marginTop:24,fontSize:13,color:C.t3}}>No credit card · Setup in under 1 hour · Cancel anytime</p>
       </div>
@@ -419,7 +442,39 @@ function FinalCTA({ onGetStarted }) {
   );
 }
 
+// Footer link definitions — all real links now
+const FOOTER_LINKS = {
+  Product: [
+    { label: "Features",     action: "scroll", id: "features"    },
+    { label: "Pricing",      action: "scroll", id: "pricing"     },
+    { label: "How It Works", action: "scroll", id: "how-it-works"},
+    { label: "FAQ",          action: "scroll", id: "faq"         },
+  ],
+  Company: [
+    { label: "About",           action: "scroll", id: "about"    },
+    { label: "Founder Story",   action: "scroll", id: "about"    },
+    { label: "Privacy Policy",  action: "href",   href: "mailto:kartik@exponent.app?subject=Privacy Policy" },
+    { label: "Terms of Service",action: "href",   href: "mailto:kartik@exponent.app?subject=Terms of Service" },
+  ],
+  Support: [
+    { label: "Help Center",      action: "href", href: "mailto:kartik@exponent.app?subject=Help" },
+    { label: "Contact Us",       action: "href", href: "mailto:kartik@exponent.app" },
+    { label: "WhatsApp Support", action: "href", href: "https://wa.me/918956419453?text=Hi%2C+I+need+help+with+Exponent" },
+    { label: "Request Demo",     action: "href", href: "mailto:kartik@exponent.app?subject=Demo Request" },
+  ],
+};
+
 function Footer({ onGetStarted }) {
+  const year = new Date().getFullYear();
+
+  const renderLink = (l) => {
+    const style = { fontSize:13, color:C.t3, textDecoration:"none", cursor:"pointer", background:"none", border:"none", padding:0, fontFamily:"inherit" };
+    if (l.action === "scroll") {
+      return <button key={l.label} onClick={() => scrollTo(l.id)} style={style}>{l.label}</button>;
+    }
+    return <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" style={style}>{l.label}</a>;
+  };
+
   return (
     <footer style={{padding:"40px 5% 32px",borderTop:`1px solid ${C.border}`,background:C.bg}}>
       <div style={{maxWidth:1100,margin:"0 auto"}}>
@@ -428,21 +483,19 @@ function Footer({ onGetStarted }) {
             <div style={{fontSize:18,fontWeight:900,letterSpacing:"0.06em",background:`linear-gradient(135deg,${C.acc2},${C.pur})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:8}}>EXPONENT</div>
             <p style={{fontSize:13,color:C.t3,lineHeight:1.7}}>The all-in-one academy management platform for coaching institutes across India.</p>
           </div>
-          {[
-            {title:"Product",links:["Features","Pricing","How It Works","FAQ"]},
-            {title:"Company",links:["About","Founder Story","Privacy Policy","Terms of Service"]},
-            {title:"Support",links:["Help Center","Contact Us","WhatsApp Support","Request Demo"]},
-          ].map(col => (
-            <div key={col.title}>
-              <div style={{fontSize:11,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>{col.title}</div>
-              {col.links.map(l => <div key={l} style={{marginBottom:10}}><a href="#" style={{fontSize:13,color:C.t3,textDecoration:"none"}}>{l}</a></div>)}
+          {Object.entries(FOOTER_LINKS).map(([title, links]) => (
+            <div key={title}>
+              <div style={{fontSize:11,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>{title}</div>
+              {links.map(l => <div key={l.label} style={{marginBottom:10}}>{renderLink(l)}</div>)}
             </div>
           ))}
         </div>
         <div style={{borderTop:`1px solid ${C.border}`,paddingTop:24,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
-          <div style={{fontSize:12,color:C.t3}}>© 2025 Exponent Platform. All rights reserved. Made with ❤️ in India.</div>
+          <div style={{fontSize:12,color:C.t3}}>© {year} Exponent Platform. All rights reserved. Made with ❤️ in India.</div>
           <div style={{display:"flex",gap:20}}>
-            {["Privacy Policy","Terms of Service","Security"].map(l => <span key={l} style={{fontSize:12,color:C.t3}}>{l}</span>)}
+            <a href="mailto:kartik@exponent.app?subject=Privacy Policy" style={{fontSize:12,color:C.t3,textDecoration:"none"}}>Privacy Policy</a>
+            <a href="mailto:kartik@exponent.app?subject=Terms of Service" style={{fontSize:12,color:C.t3,textDecoration:"none"}}>Terms of Service</a>
+            <button onClick={() => scrollTo("security")} style={{fontSize:12,color:C.t3,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:"inherit"}}>Security</button>
           </div>
         </div>
       </div>
