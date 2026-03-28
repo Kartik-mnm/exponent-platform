@@ -16,18 +16,14 @@ const C = {
 };
 
 const WHATSAPP_NUMBER = "918956419453";
-const API = "https://app.onrender.com";
+// API server for lead capture
+const API = "https://acadfee.onrender.com";
 
-// onBack  — go back to landing
-// onSignup — show the Signup page (stays inside this React SPA)
 export default function GetStarted({ onBack, onSignup }) {
   return (
     <div style={{
-      minHeight: "100vh",
-      background: C.bg,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      minHeight: "100vh", background: C.bg,
+      display: "flex", alignItems: "center", justifyContent: "center",
       padding: "24px 16px",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
     }}>
@@ -41,9 +37,7 @@ export default function GetStarted({ onBack, onSignup }) {
           background: "none", border: "none", cursor: "pointer",
           color: C.t3, fontSize: 13, fontWeight: 600, marginBottom: 28,
           display: "flex", alignItems: "center", gap: 6, padding: 0,
-        }}>
-          ← Back to Home
-        </button>
+        }}>← Back to Home</button>
 
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{
@@ -57,18 +51,11 @@ export default function GetStarted({ onBack, onSignup }) {
             fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 900,
             color: C.t1, letterSpacing: "-0.5px", marginBottom: 10,
           }}>How would you like to start?</h1>
-          <p style={{ fontSize: 15, color: C.t2, lineHeight: 1.6 }}>
-            Choose the path that works best for you.
-          </p>
+          <p style={{ fontSize: 15, color: C.t2, lineHeight: 1.6 }}>Choose the path that works best for you.</p>
         </div>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-          gap: 16,
-        }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
           <QuickSetupCard />
-          {/* Pass onSignup so clicking the button switches view inside the SPA */}
           <CreateInstantlyCard onSignup={onSignup} />
         </div>
 
@@ -80,7 +67,6 @@ export default function GetStarted({ onBack, onSignup }) {
   );
 }
 
-// ── Quick Setup Card ──────────────────────────────────────────────────────────
 function QuickSetupCard() {
   const [step, setStep] = useState("idle");
   const [form, setForm] = useState({ name: "", phone: "", academy_name: "" });
@@ -123,7 +109,6 @@ function QuickSetupCard() {
         position: "absolute", top: 0, left: 0, right: 0,
         height: 3, background: `linear-gradient(90deg, ${C.yel}, ${C.grn})`,
       }} />
-
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
         <div style={{
           width: 44, height: 44, flexShrink: 0, borderRadius: 12,
@@ -132,9 +117,7 @@ function QuickSetupCard() {
         }}>📞</div>
         <div>
           <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Quick Setup</div>
-          <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6 }}>
-            We'll contact you within 24 hours and set everything up for you.
-          </div>
+          <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6 }}>We'll contact you within 24 hours and set everything up for you.</div>
         </div>
       </div>
 
@@ -145,7 +128,6 @@ function QuickSetupCard() {
           fontWeight: 700, fontSize: 14, cursor: "pointer",
         }}>Submit My Details →</button>
       )}
-
       {step === "form" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <Input placeholder="Full Name *" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} />
@@ -160,13 +142,10 @@ function QuickSetupCard() {
           }}>{loading ? "Sending..." : "We'll Contact You →"}</button>
         </div>
       )}
-
       {step === "done" && (
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>✓</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: C.grn, marginBottom: 8 }}>
-            Got it! We'll contact you within 24 hours.
-          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.grn, marginBottom: 8 }}>Got it! We'll contact you within 24 hours.</div>
           <a href={waLink} target="_blank" rel="noreferrer" style={{
             display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: C.grn,
             background: `${C.grn}14`, border: `1px solid ${C.grn}30`,
@@ -174,7 +153,6 @@ function QuickSetupCard() {
           }}>💬 Also reach us on WhatsApp</a>
         </div>
       )}
-
       <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.5 }}>
         ✓ Personal onboarding &nbsp;✓ We handle the setup &nbsp;✓ Free trial included
       </div>
@@ -182,8 +160,6 @@ function QuickSetupCard() {
   );
 }
 
-// ── Create Instantly Card ─────────────────────────────────────────────────────
-// Uses onSignup callback — stays inside the React SPA, no page navigation
 function CreateInstantlyCard({ onSignup }) {
   return (
     <div style={{
@@ -200,7 +176,6 @@ function CreateInstantlyCard({ onSignup }) {
         color: "#fff", fontSize: 10, fontWeight: 800,
         padding: "3px 10px", borderRadius: 20, letterSpacing: "0.06em",
       }}>RECOMMENDED</div>
-
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
         <div style={{
           width: 44, height: 44, flexShrink: 0, borderRadius: 12,
@@ -209,24 +184,15 @@ function CreateInstantlyCard({ onSignup }) {
         }}>🌐</div>
         <div>
           <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Create Instantly</div>
-          <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6 }}>
-            Sign up now and access your academy dashboard immediately.
-          </div>
+          <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6 }}>Sign up now and access your academy dashboard immediately.</div>
         </div>
       </div>
-
-      <button
-        onClick={onSignup}
-        style={{
-          width: "100%", padding: "12px", borderRadius: 10, border: "none",
-          background: `linear-gradient(135deg, ${C.acc}, ${C.pur})`,
-          color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
-          boxShadow: `0 6px 24px ${C.acc}44`,
-        }}
-      >
-        🚀 Create My Academy →
-      </button>
-
+      <button onClick={onSignup} style={{
+        width: "100%", padding: "12px", borderRadius: 10, border: "none",
+        background: `linear-gradient(135deg, ${C.acc}, ${C.pur})`,
+        color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
+        boxShadow: `0 6px 24px ${C.acc}44`,
+      }}>🚀 Create My Academy →</button>
       <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.5 }}>
         ✓ Ready in 2 minutes &nbsp;✓ 7-day free trial &nbsp;✓ No credit card
       </div>
@@ -236,16 +202,12 @@ function CreateInstantlyCard({ onSignup }) {
 
 function Input({ placeholder, value, onChange, type = "text" }) {
   return (
-    <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
+    <input type={type} placeholder={placeholder} value={value}
       onChange={e => onChange(e.target.value)}
       style={{
-        width: "100%", padding: "10px 14px",
-        background: "#07090f", border: `1px solid ${C.border2}`,
-        borderRadius: 9, color: C.t1, fontSize: 14,
-        outline: "none", boxSizing: "border-box",
+        width: "100%", padding: "10px 14px", background: "#07090f",
+        border: `1px solid ${C.border2}`, borderRadius: 9, color: C.t1,
+        fontSize: 14, outline: "none", boxSizing: "border-box",
       }}
     />
   );

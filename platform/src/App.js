@@ -28,18 +28,15 @@ const PAGE_META = {
   settings:      { title: "Settings",       sub: "Platform configuration" },
 };
 
-// Where academy owners go after signup to manage their academy
-const ACADEMY_APP = "https://acadfee.onrender.com";
+// Academy app — where users go after signup to manage their academy
+const ACADEMY_APP = "https://acadfee-app.onrender.com";
 
-// ── Admin shell ───────────────────────────────────────────────────────────────
 function Shell() {
   const { admin, logout } = useAuth();
   const [page, setPage]   = useState("dashboard");
-  // view: "landing" | "get-started" | "signup" | "signup-success" | "login"
   const [view, setView]   = useState("landing");
   const [signupData, setSignupData] = useState(null);
 
-  // ── Public flow (not yet logged into admin panel) ─────────────────────────
   if (!admin) {
     if (view === "get-started")
       return (
@@ -61,7 +58,6 @@ function Shell() {
       return (
         <SignupSuccess
           data={signupData}
-          // Send academy owner to their own academy dashboard, not the platform panel
           onLogin={() => { window.location.href = ACADEMY_APP; }}
         />
       );
@@ -76,7 +72,6 @@ function Shell() {
     );
   }
 
-  // ── Logged-in admin panel ─────────────────────────────────────────────────
   const pages = { dashboard: Dashboard, academies: Academies, subscriptions: Subscriptions, analytics: Analytics, settings: Settings };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
