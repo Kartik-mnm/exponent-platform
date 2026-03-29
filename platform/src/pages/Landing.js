@@ -38,38 +38,103 @@ const scrollTo = (id) => {
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
+// ── Mobile-responsive Navbar ─────────────────────────────────────────────────
 function Navbar({ onGetStarted, onLogin }) {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled,    setScrolled]    = useState(false);
+  const [mobileOpen,  setMobileOpen]  = useState(false);
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
   const navLinks = [
-    { label: "Features",    id: "features"    },
-    { label: "Pricing",     id: "pricing"     },
-    { label: "How It Works",id: "how-it-works"},
-    { label: "FAQ",         id: "faq"         },
+    { label: "Features",     id: "features"     },
+    { label: "Pricing",      id: "pricing"      },
+    { label: "How It Works", id: "how-it-works" },
+    { label: "FAQ",          id: "faq"          },
   ];
+
+  const handleLink = (id) => {
+    setMobileOpen(false);
+    scrollTo(id);
+  };
+
   return (
-    <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 5%",height:64,display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled?`${C.bg}ee`:"transparent",backdropFilter:scrolled?"blur(20px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent",transition:"all 0.3s"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.acc},${C.pur})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:900,fontSize:15,boxShadow:`0 4px 14px ${C.acc}55`}}>E</div>
-        <div>
-          <div style={{fontSize:15,fontWeight:800,letterSpacing:"0.06em",background:`linear-gradient(135deg,${C.acc2},${C.pur})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>EXPONENT</div>
-          <div style={{fontSize:9,color:C.t3,letterSpacing:"0.1em",textTransform:"uppercase"}}>Academy OS</div>
+    <>
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 5%",height:64,display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled||mobileOpen?`${C.bg}ee`:"transparent",backdropFilter:scrolled||mobileOpen?"blur(20px)":"none",borderBottom:scrolled||mobileOpen?`1px solid ${C.border}`:"1px solid transparent",transition:"all 0.3s"}}>
+        {/* Logo */}
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.acc},${C.pur})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:900,fontSize:15,boxShadow:`0 4px 14px ${C.acc}55`}}>E</div>
+          <div>
+            <div style={{fontSize:15,fontWeight:800,letterSpacing:"0.06em",background:`linear-gradient(135deg,${C.acc2},${C.pur})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>EXPONENT</div>
+            <div style={{fontSize:9,color:C.t3,letterSpacing:"0.1em",textTransform:"uppercase"}}>Academy OS</div>
+          </div>
         </div>
-      </div>
-      <div style={{display:"flex",gap:28,alignItems:"center"}}>
-        {navLinks.map(l => (
-          <button key={l.id} onClick={() => scrollTo(l.id)} style={{fontSize:13,color:C.t2,background:"none",border:"none",cursor:"pointer",fontWeight:500,padding:0}}>{l.label}</button>
-        ))}
-      </div>
-      <div style={{display:"flex",gap:10,alignItems:"center"}}>
-        <button onClick={onLogin} style={{background:"none",border:"none",cursor:"pointer",fontSize:13,color:C.t2,fontWeight:500}}>Sign In</button>
-        <PrimaryBtn onClick={onGetStarted}>Get Started Free →</PrimaryBtn>
-      </div>
-    </nav>
+
+        {/* Desktop nav links */}
+        <div style={{display:"flex",gap:28,alignItems:"center","@media(max-width:768px)":{display:"none"}}}>
+          {navLinks.map(l => (
+            <button key={l.id} onClick={() => scrollTo(l.id)} style={{fontSize:13,color:C.t2,background:"none",border:"none",cursor:"pointer",fontWeight:500,padding:0,
+              // hide on small screens via inline — we use the hamburger instead
+              display: "var(--nav-link-display, inline-block)"
+            }}>{l.label}</button>
+          ))}
+        </div>
+
+        {/* Desktop CTA */}
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          {/* Hide sign-in text on very small screens */}
+          <button onClick={onLogin} style={{background:"none",border:"none",cursor:"pointer",fontSize:13,color:C.t2,fontWeight:500,
+            display: typeof window !== "undefined" && window.innerWidth < 480 ? "none" : "block"
+          }}>Sign In</button>
+          <PrimaryBtn onClick={onGetStarted}>Get Started →</PrimaryBtn>
+          {/* Hamburger */}
+          <button
+            onClick={() => setMobileOpen(o => !o)}
+            aria-label="Menu"
+            style={{display:"none",background:"none",border:`1px solid ${C.border2}`,borderRadius:8,cursor:"pointer",padding:"6px 8px",color:C.t2,fontSize:18,lineHeight:1,
+              // show only on mobile — we toggle via style tag below
+            }}
+            className="hamburger-btn"
+          >
+            {mobileOpen ? "✕" : "☰"}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div style={{position:"fixed",top:64,left:0,right:0,zIndex:99,background:`${C.bg}f5`,backdropFilter:"blur(20px)",borderBottom:`1px solid ${C.border}`,padding:"20px 5% 24px",display:"flex",flexDirection:"column",gap:4}}>
+          {navLinks.map(l => (
+            <button key={l.id} onClick={() => handleLink(l.id)} style={{fontSize:15,color:C.t1,background:"none",border:"none",cursor:"pointer",fontWeight:600,padding:"12px 0",textAlign:"left",borderBottom:`1px solid ${C.border}`}}>
+              {l.label}
+            </button>
+          ))}
+          <div style={{display:"flex",gap:10,marginTop:16,flexDirection:"column"}}>
+            <button onClick={() => { setMobileOpen(false); onLogin(); }} style={{padding:"11px",borderRadius:10,background:C.bg3,border:`1px solid ${C.border2}`,color:C.t1,fontWeight:700,fontSize:14,cursor:"pointer"}}>
+              Sign In
+            </button>
+            <button onClick={() => { setMobileOpen(false); onGetStarted(); }} style={{padding:"11px",borderRadius:10,background:`linear-gradient(135deg,${C.acc},${C.pur})`,border:"none",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 16px ${C.acc}44`}}>
+              🚀 Get Started Free →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* CSS to show hamburger + hide desktop links on mobile */}
+      <style>{`
+        @media (max-width: 768px) {
+          .hamburger-btn { display: block !important; }
+          :root { --nav-link-display: none; }
+        }
+        @media (min-width: 769px) {
+          .hamburger-btn { display: none !important; }
+          :root { --nav-link-display: inline-block; }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -79,7 +144,7 @@ function Hero({ onGetStarted }) {
       <div style={{position:"absolute",inset:0,zIndex:0,backgroundImage:`linear-gradient(${C.border}44 1px,transparent 1px),linear-gradient(90deg,${C.border}44 1px,transparent 1px)`,backgroundSize:"60px 60px",maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",WebkitMaskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)"}} />
       <div style={{position:"relative",zIndex:1,maxWidth:800,margin:"0 auto"}}>
         <div style={{marginBottom:28}}>
-          <span style={{display:"inline-flex",alignItems:"center",gap:8,padding:"6px 16px",borderRadius:20,background:`${C.grn}14`,border:`1px solid ${C.grn}33`,fontSize:12,color:C.grn,fontWeight:600}}>✨ Trusted by 40+ academies across India</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:8,padding:"6px 16px",borderRadius:20,background:`${C.grn}14`,border:`1px solid ${C.grn}33`,fontSize:12,color:C.grn,fontWeight:600}}>✨ Trusted by coaching academies across India</span>
         </div>
         <h1 style={{fontSize:"clamp(36px,6vw,64px)",fontWeight:900,lineHeight:1.1,letterSpacing:"-1.5px",color:C.t1,marginBottom:20}}>
           Run Your Academy<br />
@@ -382,7 +447,7 @@ function FinalCTA({ onGetStarted }) {
     <section style={{padding:"100px 5%",background:`radial-gradient(ellipse 70% 60% at 50% 50%,${C.acc}14 0%,transparent 70%)`,textAlign:"center"}}>
       <div style={{maxWidth:680,margin:"0 auto"}}>
         <h2 style={{fontSize:42,fontWeight:900,color:C.t1,lineHeight:1.2,letterSpacing:"-1px",marginBottom:16}}>Ready to transform your academy?</h2>
-        <p style={{fontSize:17,color:C.t2,lineHeight:1.7,marginBottom:40}}>Join 40+ coaching institutes already running smarter with Exponent. Start your free 7-day trial — no credit card needed.</p>
+        <p style={{fontSize:17,color:C.t2,lineHeight:1.7,marginBottom:40}}>Join coaching institutes already running smarter with Exponent. Start your free 7-day trial — no credit card needed.</p>
         <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
           <PrimaryBtn large onClick={onGetStarted}>🚀 Start Free Trial — 7 Days</PrimaryBtn>
           <GhostBtn href="mailto:kartik@exponent.app">💬 Talk to Us</GhostBtn>
@@ -418,12 +483,9 @@ function Footer({ onGetStarted }) {
   const year = new Date().getFullYear();
   const renderLink = (l) => {
     const style = { fontSize:13, color:C.t3, textDecoration:"none", cursor:"pointer", background:"none", border:"none", padding:0, fontFamily:"inherit" };
-    if (l.action === "scroll") {
-      return <button key={l.label} onClick={() => scrollTo(l.id)} style={style}>{l.label}</button>;
-    }
-    // FIX: mailto links use _self to avoid blank black page in browsers
+    if (l.action === "scroll") return <button key={l.label} onClick={() => scrollTo(l.id)} style={style}>{l.label}</button>;
     const isMailto = l.href?.startsWith("mailto:");
-    return <a key={l.label} href={l.href} target={isMailto ? "_self" : "_blank"} rel={isMailto ? undefined : "noopener noreferrer"} style={style}>{l.label}</a>;
+    return <a key={l.label} href={l.href} target={isMailto?"_self":"_blank"} rel={isMailto?undefined:"noopener noreferrer"} style={style}>{l.label}</a>;
   };
   return (
     <footer style={{padding:"40px 5% 32px",borderTop:`1px solid ${C.border}`,background:C.bg}}>
