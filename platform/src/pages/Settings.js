@@ -1,18 +1,142 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api";
 
+const PLATFORM_FAVICON_KEY = "exponent_platform_favicon";
+
+// Apply favicon to the platform tab dynamically
+function applyPlatformFavicon(url) {
+  const existing = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
+  existing.forEach(el => el.parentNode.removeChild(el));
+  if (!url) return;
+  const link = document.createElement("link");
+  link.rel  = "icon";
+  link.type = url.endsWith(".ico") ? "image/x-icon" : "image/png";
+  link.href = url + "?v=" + Date.now();
+  document.head.appendChild(link);
+}
+
+function FaviconUploader() {
+  const [uploading, setUploading] = useState(false);
+  const [preview,   setPreview]   = useState(null);
+  const [error,     setError]     = useState("");
+  const [saved,     setSaved]     = useState(false);
+  const fileRef = useRef();
+
+  // Load saved favicon URL from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(PLATFORM_FAVICON_KEY);
+    if (saved) setPreview(saved);
+  }, []);
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(""); setSaved(false);
+
+    const allowed = ["image/jpeg","image/png","image/webp","image/gif","image/svg+xml","image/x-icon","image/vnd.microsoft.icon"];
+    if (!allowed.includes(file.type)) {
+      setError("Invalid file type. Use JPEG, PNG, WebP, SVG, or ICO.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError("File too large. Max 2MB for favicon.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target.result;
+      setPreview(base64);
+      setUploading(true);
+      try {
+        const res = await API.post("/upload/platform", { image: base64 });
+        const url = res.data.url;
+        localStorage.setItem(PLATFORM_FAVICON_KEY, url);
+        applyPlatformFavicon(url);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      } catch (err) {
+        setError(err.response?.data?.error || "Upload failed. Please check Cloudinary env vars on Render.");
+        setPreview(localStorage.getItem(PLATFORM_FAVICON_KEY) || null);
+      } finally { setUploading(false); }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemove = () => {
+    localStorage.removeItem(PLATFORM_FAVICON_KEY);
+    applyPlatformFavicon(null);
+    setPreview(null);
+    setSaved(false);
+    setError("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
+        {/* Preview box */}
+        <div style={{
+          width: 48, height: 48, borderRadius: 10, overflow: "hidden",
+          background: "var(--bg3)", border: "1px solid var(--border)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+        }}>
+          {preview
+            ? <img src={preview} alt="favicon preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            : <span style={{ fontSize: 22, color: "var(--text3)" }}>🌐</span>}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? "Uploading…" : preview ? "Change Favicon" : "Upload Favicon"}
+            </button>
+            {preview && (
+              <button className="btn btn-sm" style={{ color: "var(--red)", border: "1px solid var(--red)", background: "transparent" }} onClick={handleRemove}>
+                Remove
+              </button>
+            )}
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/x-icon"
+            style={{ display: "none" }}
+            onChange={handleFile}
+          />
+          <div style={{ fontSize: 11, color: "var(--text3)" }}>
+            Recommended: 32×32 or 64×64 PNG/ICO. Shown in the browser tab.
+          </div>
+        </div>
+      </div>
+      {error  && <div style={{ fontSize: 12, color: "var(--red)",   marginTop: 4 }}>{error}</div>}
+      {saved  && <div style={{ fontSize: 12, color: "var(--green)", marginTop: 4 }}>✅ Favicon updated — check your browser tab!</div>}
+    </div>
+  );
+}
+
 export default function Settings() {
   const { admin } = useAuth();
-  const [pwForm, setPwForm]   = useState({ current: "", newPw: "", confirm: "" });
+  const [pwForm, setPwForm]     = useState({ current: "", newPw: "", confirm: "" });
   const [pwSaving, setPwSaving] = useState(false);
-  const [pwMsg, setPwMsg]     = useState("");
-  const [pwErr, setPwErr]     = useState("");
+  const [pwMsg, setPwMsg]       = useState("");
+  const [pwErr, setPwErr]       = useState("");
+
+  // Apply saved favicon on every mount
+  useEffect(() => {
+    const saved = localStorage.getItem(PLATFORM_FAVICON_KEY);
+    if (saved) applyPlatformFavicon(saved);
+  }, []);
 
   const changePw = async () => {
     setPwErr(""); setPwMsg("");
-    if (!pwForm.current)             return setPwErr("Current password required");
-    if (pwForm.newPw.length < 8)     return setPwErr("New password must be ≥8 characters");
+    if (!pwForm.current)                 return setPwErr("Current password required");
+    if (pwForm.newPw.length < 8)         return setPwErr("New password must be ≥8 characters");
     if (pwForm.newPw !== pwForm.confirm) return setPwErr("Passwords do not match");
     setPwSaving(true);
     try {
@@ -26,7 +150,8 @@ export default function Settings() {
 
   return (
     <div style={{ maxWidth: 680 }}>
-      {/* Profile card */}
+
+      {/* ── Profile card ── */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header"><div className="card-title">Platform Owner Profile</div></div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -41,13 +166,26 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Change password */}
+      {/* ── Platform Branding ── */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="card-header">
+          <div className="card-title">Platform Branding</div>
+        </div>
+        <div style={{ marginBottom: 6, fontSize: 13, fontWeight: 600, color: "var(--text2)" }}>Browser Tab Favicon</div>
+        <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
+          This favicon appears in the browser tab when you are logged in to <strong>exponent-platform.vercel.app</strong>.
+          Stored in your browser — upload once and it persists.
+        </div>
+        <FaviconUploader />
+      </div>
+
+      {/* ── Change password ── */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header"><div className="card-title">Change Password</div></div>
         <div className="form-grid" style={{ gridTemplateColumns: "1fr" }}>
           {[
             { label: "Current Password", key: "current" },
-            { label: "New Password", key: "newPw" },
+            { label: "New Password",     key: "newPw" },
             { label: "Confirm New Password", key: "confirm" },
           ].map(f => (
             <div className="form-group" key={f.key}>
@@ -63,17 +201,17 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Architecture info */}
+      {/* ── Architecture info ── */}
       <div className="card">
         <div className="card-header"><div className="card-title">Platform Architecture</div></div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
-            { label: "Frontend",    value: "React 18 (Netlify)",    icon: "⚛️" },
-            { label: "Backend",     value: "Node.js + Express (Render)", icon: "🟩" },
-            { label: "Database",    value: "PostgreSQL (Render)",   icon: "🐘" },
-            { label: "File Upload", value: "Cloudinary CDN",         icon: "☁️" },
-            { label: "Auth",        value: "JWT + Refresh Tokens",   icon: "🔐" },
-            { label: "Multi-tenant",value: "Shared DB + academy_id", icon: "🏗️" },
+            { label: "Frontend",     value: "React 18 (Vercel)",         icon: "⚛️" },
+            { label: "Backend",      value: "Node.js + Express (Render)", icon: "🟩" },
+            { label: "Database",     value: "PostgreSQL (Render)",        icon: "🐘" },
+            { label: "File Upload",  value: "Cloudinary CDN",             icon: "☁️" },
+            { label: "Auth",         value: "JWT + Refresh Tokens",       icon: "🔐" },
+            { label: "Multi-tenant", value: "Shared DB + academy_id",     icon: "🏗️" },
           ].map(r => (
             <div key={r.label} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 12px", background: "var(--bg3)", borderRadius: 8 }}>
               <span style={{ fontSize: 20 }}>{r.icon}</span>
