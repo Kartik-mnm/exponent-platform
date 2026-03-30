@@ -11,12 +11,16 @@ import GetStarted    from "./pages/GetStarted";
 import Signup        from "./pages/Signup";
 import SignupSuccess  from "./pages/SignupSuccess";
 import AuditLog      from "./pages/AuditLog";
+import Leads         from "./pages/Leads";
+import Revenue       from "./pages/Revenue";
 import "./index.css";
 
 const NAV = [
   { id: "dashboard",     label: "Dashboard",     icon: "⬡",  group: "main" },
   { id: "academies",     label: "Academies",     icon: "🏫",  group: "main" },
+  { id: "leads",         label: "Leads",         icon: "📬",  group: "main" },
   { id: "subscriptions", label: "Subscriptions", icon: "💳",  group: "main" },
+  { id: "revenue",       label: "Revenue",       icon: "💰",  group: "main" },
   { id: "analytics",    label: "Analytics",     icon: "📊",  group: "main" },
   { id: "audit",        label: "Audit Log",     icon: "📋",  group: "system" },
   { id: "settings",     label: "Settings",      icon: "⚙",   group: "system" },
@@ -25,8 +29,10 @@ const NAV = [
 const PAGE_META = {
   dashboard:     { title: "Dashboard",      sub: "Platform-wide overview" },
   academies:     { title: "Academies",      sub: "Manage all onboarded academies" },
+  leads:         { title: "Leads",          sub: "Follow up on Quick Setup enquiries" },
   subscriptions: { title: "Subscriptions",  sub: "Plans, billing & expiry management" },
-  analytics:     { title: "Analytics",      sub: "Usage stats & revenue insights" },
+  revenue:       { title: "Revenue",        sub: "Manual log of all payments received" },
+  analytics:     { title: "Analytics",      sub: "Usage stats & growth insights" },
   audit:         { title: "Audit Log",      sub: "All platform actions tracked" },
   settings:      { title: "Settings",       sub: "Platform configuration" },
 };
@@ -50,7 +56,11 @@ function Shell() {
     return <Landing onLogin={() => setView("login")} onGetStarted={() => setView("get-started")} />;
   }
 
-  const pages = { dashboard: Dashboard, academies: Academies, subscriptions: Subscriptions, analytics: Analytics, settings: Settings, audit: AuditLog };
+  const pages = {
+    dashboard: Dashboard, academies: Academies, leads: Leads,
+    subscriptions: Subscriptions, revenue: Revenue,
+    analytics: Analytics, settings: Settings, audit: AuditLog,
+  };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
   const mainNav = NAV.filter(n => n.group === "main");
