@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 
-// ── Owner contact constants ────────────────────────────────────────────────────
 const OWNER_EMAIL    = "aspirantth@gmail.com";
 const OWNER_PHONE    = "8956419453";
-const OWNER_WHATSAPP = "918956419453";  // with country code for wa.me links
+const OWNER_WHATSAPP = "918956419453";
 
 const C = {
   bg:"#07090f",bg2:"#0d1117",bg3:"#131720",
@@ -80,7 +79,7 @@ function Navbar({ onGetStarted, onLogin }) {
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <button onClick={onLogin} style={{background:"none",border:"none",cursor:"pointer",fontSize:13,color:C.t2,fontWeight:500,display:typeof window!=="undefined"&&window.innerWidth<480?"none":"block"}}>Sign In</button>
           <PrimaryBtn onClick={onGetStarted}>Get Started →</PrimaryBtn>
-          <button onClick={()=>setMobileOpen(o=>!o)} aria-label="Menu" style={{display:"none",background:"none",border:`1px solid ${C.border2}`,borderRadius:8,cursor:"pointer",padding:"6px 8px",color:C.t2,fontSize:18,lineHeight:1}} className="hamburger-btn">{mobileOpen?"\u2715":"\u2630"}</button>
+          <button onClick={()=>setMobileOpen(o=>!o)} aria-label="Menu" style={{display:"none",background:"none",border:`1px solid ${C.border2}`,borderRadius:8,cursor:"pointer",padding:"6px 8px",color:C.t2,fontSize:18,lineHeight:1}} className="hamburger-btn">{mobileOpen?"✕":"☰"}</button>
         </div>
       </nav>
       {mobileOpen && (
@@ -110,7 +109,7 @@ function Hero({ onGetStarted }) {
           <GhostBtn onClick={()=>scrollTo("how-it-works")}>▶ See How It Works</GhostBtn>
         </div>
         <div style={{display:"flex",gap:48,justifyContent:"center",flexWrap:"wrap",paddingTop:40,borderTop:`1px solid ${C.border}`}}>
-          {[{v:"40+",l:"Academies",i:"🏥"},{v:"2,000+",l:"Students Managed",i:"🎓"},{v:"98%",l:"Fee Collection Rate",i:"💰"},{v:"4.9★",l:"Average Rating",i:"⭐"}].map(s=>(<div key={s.l} style={{textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,color:C.t1}}>{s.i} {s.v}</div><div style={{fontSize:12,color:C.t3,marginTop:3}}>{s.l}</div></div>))}
+          {[{v:"40+",l:"Academies",i:"🏫"},{v:"2,000+",l:"Students Managed",i:"🎓"},{v:"98%",l:"Fee Collection Rate",i:"💰"},{v:"4.9★",l:"Average Rating",i:"⭐"}].map(s=>(<div key={s.l} style={{textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,color:C.t1}}>{s.i} {s.v}</div><div style={{fontSize:12,color:C.t3,marginTop:3}}>{s.l}</div></div>))}
         </div>
       </div>
     </section>
@@ -118,20 +117,20 @@ function Hero({ onGetStarted }) {
 }
 
 function DashPreview() {
-  const stats=[{l:"Active Students",v:"247",c:C.acc,i:"🎓"},{l:"Fees Collected",v:"\u20b91.8L",c:C.grn,i:"💰"},{l:"Pending Dues",v:"\u20b924K",c:C.yel,i:"⚠️"},{l:"Attendance",v:"94%",c:C.cyn,i:"\u2705"}];
-  const rows=[{n:"Priya Sharma",b:"JEE Adv.",s:"paid",d:"\u20b90"},{n:"Rahul Deshmukh",b:"NEET",s:"pending",d:"\u20b92,500"},{n:"Sneha Patil",b:"Class 10",s:"paid",d:"\u20b90"},{n:"Arjun Verma",b:"JEE Main",s:"partial",d:"\u20b91,200"},{n:"Kavya Singh",b:"Foundation",s:"paid",d:"\u20b90"}];
+  const stats=[{l:"Active Students",v:"247",c:C.acc,i:"🎓"},{l:"Fees Collected",v:"₹1.8L",c:C.grn,i:"💰"},{l:"Pending Dues",v:"₹24K",c:C.yel,i:"⚠️"},{l:"Attendance",v:"94%",c:C.cyn,i:"✅"}];
+  const rows=[{n:"Priya Sharma",b:"JEE Adv.",s:"paid",d:"₹0"},{n:"Rahul Deshmukh",b:"NEET",s:"pending",d:"₹2,500"},{n:"Sneha Patil",b:"Class 10",s:"paid",d:"₹0"},{n:"Arjun Verma",b:"JEE Main",s:"partial",d:"₹1,200"},{n:"Kavya Singh",b:"Foundation",s:"paid",d:"₹0"}];
   const sc={paid:C.grn,pending:C.red,partial:C.yel};
   return (
     <section style={{padding:"0 5% 80px"}}><div style={{maxWidth:1100,margin:"0 auto"}}>
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",boxShadow:"0 40px 120px rgba(0,0,0,0.6)"}}>
         <div style={{background:C.bg3,padding:"12px 16px",display:"flex",alignItems:"center",gap:8,borderBottom:`1px solid ${C.border}`}}>
           {["#ff5f57","#febc2e","#28c840"].map(c=><div key={c} style={{width:12,height:12,borderRadius:"50%",background:c}}/>)}
-          <div style={{flex:1,background:C.bg,borderRadius:6,padding:"5px 12px",fontSize:11,color:C.t3,marginLeft:8}}>acadfee-app.onrender.com/dashboard</div>
+          <div style={{flex:1,background:C.bg,borderRadius:6,padding:"5px 12px",fontSize:11,color:C.t3,marginLeft:8}}>app.exponentgrow.in/dashboard</div>
         </div>
         <div style={{display:"flex",minHeight:360}}>
           <div style={{width:180,background:C.bg,borderRight:`1px solid ${C.border}`,padding:"16px 10px",flexShrink:0}}>
             <div style={{fontSize:11,fontWeight:800,color:C.acc,letterSpacing:"0.1em",padding:"4px 8px",marginBottom:8}}>EXPONENT</div>
-            {["🔵 Dashboard","👤 Students","💳 Payments","\u2705 Attendance","📊 Reports"].map((item,i)=>(<div key={item} style={{padding:"7px 10px",borderRadius:7,fontSize:12,color:i===0?C.acc:C.t3,background:i===0?`${C.acc}14`:"transparent",marginBottom:2,fontWeight:i===0?600:400}}>{item}</div>))}
+            {["🔵 Dashboard","👤 Students","💳 Payments","✅ Attendance","📊 Reports"].map((item,i)=>(<div key={item} style={{padding:"7px 10px",borderRadius:7,fontSize:12,color:i===0?C.acc:C.t3,background:i===0?`${C.acc}14`:"transparent",marginBottom:2,fontWeight:i===0?600:400}}>{item}</div>))}
           </div>
           <div style={{flex:1,padding:20,overflow:"hidden"}}>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
@@ -139,7 +138,7 @@ function DashPreview() {
             </div>
             <div style={{background:C.bg3,borderRadius:10,border:`1px solid ${C.border}`,overflow:"hidden"}}>
               <div style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,fontSize:11,fontWeight:700,color:C.t2}}>Recent Students</div>
-              {rows.map(r=>(<div key={r.n} style={{display:"flex",alignItems:"center",padding:"8px 14px",borderBottom:`1px solid ${C.border}88`,gap:12}}><div style={{width:26,height:26,borderRadius:"50%",background:C.acc,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"#fff",fontWeight:700,flexShrink:0}}>{r.n[0]}</div><div style={{flex:1}}><div style={{fontSize:12,fontWeight:600,color:C.t1}}>{r.n}</div><div style={{fontSize:10,color:C.t3}}>{r.b}</div></div><span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:`${sc[r.s]}18`,color:sc[r.s],fontWeight:600}}>{r.s}</span><div style={{fontSize:11,color:r.d==="\u20b90"?C.grn:C.red,fontWeight:700}}>{r.d}</div></div>))}
+              {rows.map(r=>(<div key={r.n} style={{display:"flex",alignItems:"center",padding:"8px 14px",borderBottom:`1px solid ${C.border}88`,gap:12}}><div style={{width:26,height:26,borderRadius:"50%",background:C.acc,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"#fff",fontWeight:700,flexShrink:0}}>{r.n[0]}</div><div style={{flex:1}}><div style={{fontSize:12,fontWeight:600,color:C.t1}}>{r.n}</div><div style={{fontSize:10,color:C.t3}}>{r.b}</div></div><span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:`${sc[r.s]}18`,color:sc[r.s],fontWeight:600}}>{r.s}</span><div style={{fontSize:11,color:r.d==="₹0"?C.grn:C.red,fontWeight:700}}>{r.d}</div></div>))}
             </div>
           </div>
         </div>
@@ -159,13 +158,14 @@ function TrustedBy() {
   );
 }
 
+// ── Features — using actual Unicode chars, not escape sequences ────────────────
 const FEATS = [
   {icon:"👤",color:C.acc,title:"Smart Student Management",desc:"Add, edit, and track every student. Batch assignments, roll numbers, photo ID cards, and QR attendance — all from one place.",pts:["Student profiles with photos","Batch & branch assignment","QR code ID cards","Parent contact info"]},
   {icon:"💳",color:C.grn,title:"Automated Fee Collection",desc:"Generate fee records, track dues, and print professional receipts instantly.",pts:["Monthly fee records","Partial payment tracking","Printable receipts","Outstanding dues dashboard"]},
-  {icon:"\u2705",color:C.cyn,title:"One-tap Attendance",desc:"Mark attendance in seconds with QR scanner, bulk marking, and auto parent alerts.",pts:["QR-based scanning","Bulk attendance marking","Absent alerts to parents","Monthly attendance reports"]},
+  {icon:"✅",color:C.cyn,title:"One-tap Attendance",desc:"Mark attendance in seconds with QR scanner, bulk marking, and auto parent alerts.",pts:["QR-based scanning","Bulk attendance marking","Absent alerts to parents","Monthly attendance reports"]},
   {icon:"🔔",color:C.pur,title:"Parent Notifications",desc:"Instantly notify parents about fees, attendance, and test results via push notifications.",pts:["Fee due reminders","Absent day alerts","Exam result sharing","Custom announcements"]},
   {icon:"📊",color:C.yel,title:"Reports & Analytics",desc:"Get a full view of your academy's financial health, attendance trends, and performance.",pts:["Revenue reports","Attendance analytics","Branch performance","Monthly summaries"]},
-  {icon:"🏥",color:C.red,title:"Multi-branch Ready",desc:"Manage multiple branches, assign staff, and track all performance from one login.",pts:["Unlimited branches","Branch-wise reports","Staff role management","Centralized billing"]},
+  {icon:"🏫",color:C.red,title:"Multi-branch Ready",desc:"Manage multiple branches, assign staff, and track all performance from one login.",pts:["Unlimited branches","Branch-wise reports","Staff role management","Centralized billing"]},
 ];
 
 function Features() {
@@ -174,7 +174,7 @@ function Features() {
     <section id="features" style={{padding:"100px 5%"}}><div style={{maxWidth:1100,margin:"0 auto"}}>
       <SecHeading label="Features" title="Built for academies that want to grow, not just survive." sub="Everything your coaching institute needs to run professionally, without the chaos." />
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:20}}>
-        {FEATS.map((f,i)=>(<div key={f.title} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)} style={{background:C.bg2,border:`1px solid ${hov===i?f.color+"55":C.border}`,borderRadius:16,padding:28,transition:"all 0.25s",transform:hov===i?"translateY(-4px)":"none",boxShadow:hov===i?`0 16px 48px ${f.color}18`:"none"}}><div style={{width:48,height:48,borderRadius:12,fontSize:22,background:`${f.color}16`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16,border:`1px solid ${f.color}22`}}>{f.icon}</div><h3 style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:10}}>{f.title}</h3><p style={{fontSize:14,color:C.t2,lineHeight:1.7,marginBottom:16}}>{f.desc}</p><ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:6}}>{f.pts.map(b=><li key={b} style={{fontSize:13,color:C.t2,display:"flex",alignItems:"center",gap:8}}><span style={{color:f.color,fontSize:11,fontWeight:700}}>\u2713</span> {b}</li>)}</ul></div>))}
+        {FEATS.map((f,i)=>(<div key={f.title} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)} style={{background:C.bg2,border:`1px solid ${hov===i?f.color+"55":C.border}`,borderRadius:16,padding:28,transition:"all 0.25s",transform:hov===i?"translateY(-4px)":"none",boxShadow:hov===i?`0 16px 48px ${f.color}18`:"none"}}><div style={{width:48,height:48,borderRadius:12,fontSize:22,background:`${f.color}16`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16,border:`1px solid ${f.color}22`}}>{f.icon}</div><h3 style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:10}}>{f.title}</h3><p style={{fontSize:14,color:C.t2,lineHeight:1.7,marginBottom:16}}>{f.desc}</p><ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:6}}>{f.pts.map(b=><li key={b} style={{fontSize:13,color:C.t2,display:"flex",alignItems:"center",gap:8}}><span style={{color:f.color,fontSize:11,fontWeight:700}}>✓</span> {b}</li>)}</ul></div>))}
       </div>
     </div></section>
   );
@@ -248,7 +248,7 @@ function Testimonials() {
     <section style={{padding:"100px 5%",background:`linear-gradient(180deg,${C.bg2} 0%,${C.bg} 100%)`}}><div style={{maxWidth:1100,margin:"0 auto"}}>
       <SecHeading label="Testimonials" title="Loved by academy owners across India." sub="Don't take our word for it. Here's what academy owners say." />
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
-        {TESTI.map(t=>(<div key={t.n} style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:16,padding:28}}><div style={{display:"flex",gap:3,marginBottom:16}}>{[1,2,3,4,5].map(i=><span key={i} style={{color:C.yel}}>★</span>)}</div><p style={{fontSize:14,color:C.t2,lineHeight:1.8,marginBottom:20,fontStyle:"italic"}}>"{ t.t}"</p><div style={{display:"flex",alignItems:"center",gap:12}}><div style={{width:40,height:40,borderRadius:"50%",background:`${t.c}22`,border:`2px solid ${t.c}44`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:15,color:t.c}}>{t.a}</div><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{t.n}</div><div style={{fontSize:11,color:C.t3}}>{t.r}</div></div></div></div>))}
+        {TESTI.map(t=>(<div key={t.n} style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:16,padding:28}}><div style={{display:"flex",gap:3,marginBottom:16}}>{[1,2,3,4,5].map(i=><span key={i} style={{color:C.yel}}>★</span>)}</div><p style={{fontSize:14,color:C.t2,lineHeight:1.8,marginBottom:20,fontStyle:"italic"}}>"{t.t}"</p><div style={{display:"flex",alignItems:"center",gap:12}}><div style={{width:40,height:40,borderRadius:"50%",background:`${t.c}22`,border:`2px solid ${t.c}44`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:15,color:t.c}}>{t.a}</div><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{t.n}</div><div style={{fontSize:11,color:C.t3}}>{t.r}</div></div></div></div>))}
       </div>
     </div></section>
   );
