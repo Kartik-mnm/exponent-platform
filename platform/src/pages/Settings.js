@@ -23,7 +23,6 @@ function FaviconUploader() {
   const [saved,     setSaved]     = useState(false);
   const fileRef = useRef();
 
-  // Load saved favicon URL from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(PLATFORM_FAVICON_KEY);
     if (saved) setPreview(saved);
@@ -50,7 +49,10 @@ function FaviconUploader() {
       setPreview(base64);
       setUploading(true);
       try {
-        const res = await API.post("/upload/platform", { image: base64 });
+        // FIX: platform api.js baseURL is https://api.exponentgrow.in (no /api suffix)
+        // so we must include /api in the path here.
+        // The server mounts upload at /api/upload, so the full endpoint is /api/upload/platform.
+        const res = await API.post("/api/upload/platform", { image: base64 });
         const url = res.data.url;
         localStorage.setItem(PLATFORM_FAVICON_KEY, url);
         applyPlatformFavicon(url);
@@ -76,7 +78,6 @@ function FaviconUploader() {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
-        {/* Preview box */}
         <div style={{
           width: 48, height: 48, borderRadius: 10, overflow: "hidden",
           background: "var(--bg3)", border: "1px solid var(--border)",
@@ -127,7 +128,6 @@ export default function Settings() {
   const [pwMsg, setPwMsg]       = useState("");
   const [pwErr, setPwErr]       = useState("");
 
-  // Apply saved favicon on every mount
   useEffect(() => {
     const saved = localStorage.getItem(PLATFORM_FAVICON_KEY);
     if (saved) applyPlatformFavicon(saved);
@@ -140,6 +140,7 @@ export default function Settings() {
     if (pwForm.newPw !== pwForm.confirm) return setPwErr("Passwords do not match");
     setPwSaving(true);
     try {
+      // FIX: same prefix issue — platform auth route is at /platform/auth/change-password
       await API.post("/platform/auth/change-password", { current: pwForm.current, newPassword: pwForm.newPw });
       setPwMsg("✅ Password updated successfully!");
       setPwForm({ current: "", newPw: "", confirm: "" });
@@ -173,7 +174,7 @@ export default function Settings() {
         </div>
         <div style={{ marginBottom: 6, fontSize: 13, fontWeight: 600, color: "var(--text2)" }}>Browser Tab Favicon</div>
         <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
-          This favicon appears in the browser tab when you are logged in to <strong>exponent-platform.vercel.app</strong>.
+          This favicon appears in the browser tab when you are logged in to <strong>exponentgrow.in</strong>.
           Stored in your browser — upload once and it persists.
         </div>
         <FaviconUploader />
@@ -206,12 +207,12 @@ export default function Settings() {
         <div className="card-header"><div className="card-title">Platform Architecture</div></div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
-            { label: "Frontend",     value: "React 18 (Vercel)",         icon: "⚛️" },
-            { label: "Backend",      value: "Node.js + Express (Render)", icon: "🟩" },
-            { label: "Database",     value: "PostgreSQL (Render)",        icon: "🐘" },
-            { label: "File Upload",  value: "Cloudinary CDN",             icon: "☁️" },
-            { label: "Auth",         value: "JWT + Refresh Tokens",       icon: "🔐" },
-            { label: "Multi-tenant", value: "Shared DB + academy_id",     icon: "🏗️" },
+            { label: "Frontend",     value: "React 18 (Vercel)",          icon: "⚛️" },
+            { label: "Backend",      value: "Node.js + Express (Render)",  icon: "🟩" },
+            { label: "Database",     value: "PostgreSQL (Render)",         icon: "🐘" },
+            { label: "File Upload",  value: "Cloudinary CDN",              icon: "☁️" },
+            { label: "Auth",         value: "JWT + Refresh Tokens",        icon: "🔐" },
+            { label: "Multi-tenant", value: "Shared DB + academy_id",      icon: "🏗️" },
           ].map(r => (
             <div key={r.label} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 12px", background: "var(--bg3)", borderRadius: 8 }}>
               <span style={{ fontSize: 20 }}>{r.icon}</span>
