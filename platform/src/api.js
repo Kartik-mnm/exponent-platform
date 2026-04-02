@@ -1,8 +1,10 @@
 import axios from "axios";
 
-// Always use the hardcoded Render URL — no env var that can be misconfigured
+// Always use the custom domain — never the old Render URL
+const API_BASE = "https://api.exponentgrow.in";
+
 const API = axios.create({
-  baseURL: "https://acadfee.onrender.com",
+  baseURL: API_BASE,
   withCredentials: true,
 });
 
@@ -15,7 +17,6 @@ API.interceptors.request.use((cfg) => {
 API.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Only auto-redirect on 401 when NOT on the login endpoint
     const url = err.config?.url || "";
     const isLoginRoute = url.includes("/auth/login");
     if (err.response?.status === 401 && !isLoginRoute) {
