@@ -5,21 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Exponent Platform — Academy Management Control Panel" />
     <meta name="theme-color" content="#6366f1" />
-
-    <!-- Open Graph -->
     <meta property="og:title" content="Exponent Platform" />
     <meta property="og:description" content="The all-in-one academy management software for coaching institutes." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.exponentgrow.in" />
 
     <!--
-      Permanent Exponent favicon — inline SVG data URI.
-      Works on ALL browsers, on ALL devices, without any localStorage or JS.
-      Purple-gradient "E" logo that matches the brand.
+      Default favicon: purple gradient E — embedded as SVG data URI.
+      Zero network requests. Works on all browsers, all devices, incognito.
+      Replaced instantly by the uploaded logo if one exists in DB.
     -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='900' fill='white'%3EE%3C/text%3E%3C/svg%3E" />
-    <!-- Fallback for older browsers that don't support SVG favicons (e.g. Safari < 14) -->
-    <link rel="alternate icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAGeSURBVFiF7ZYxTsMwFIa/NE1TqRIDB2DhAIgDcAAOwMIBOAAHYOEAHIDhACyIBakSC0tHFokFiY0DIxJje3Bip3Zsx3YHBp40iu3/e8/vxHYMGzZs2LBhw4YNGzb8F5xzPgghHgkhDimlXinlRil1Wmt9aa0vSimXUspLKeVOSrkXQuyEEFshxFZKeRBC7IUQOynlSUq5l1KepJRHKeVRSnmSUh6llHsp5U1KeRJCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQByHEQQhxEEIchBAHIcRBCHEQQhyEEAchxEEIcRBCHIQQB+Ab" type="image/png" />
+    <link id="favicon" rel="icon" type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='900' fill='white'%3EE%3C%2Ftext%3E%3C%2Fsvg%3E"
+    />
 
     <title>Exponent Platform</title>
     <style>
@@ -27,25 +25,51 @@
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     </style>
 
-    <!--
-      If the platform owner uploaded a custom favicon via Settings,
-      override the default E-logo with their custom one.
-      This only applies to the logged-in admin panel view.
-    -->
     <script>
+      // STEP 1: Apply cached favicon instantly (zero latency for returning visitors)
       (function() {
         try {
-          var saved = localStorage.getItem('exponent_platform_favicon');
-          if (saved && saved.startsWith('http')) {
-            var links = document.querySelectorAll("link[rel*='icon']");
-            links.forEach(function(el) { el.parentNode.removeChild(el); });
-            var link = document.createElement('link');
-            link.rel  = 'icon';
-            link.type = saved.endsWith('.ico') ? 'image/x-icon' : 'image/png';
-            link.href = saved + '?v=' + Date.now();
-            document.head.appendChild(link);
+          var cached = localStorage.getItem('exponent_platform_favicon');
+          if (cached && cached.startsWith('http')) {
+            var link = document.getElementById('favicon');
+            if (link) { link.type = 'image/png'; link.href = cached; }
           }
         } catch(e) {}
+      })();
+
+      // STEP 2: Fetch latest branding from database — no auth required
+      // This is the KEY FIX: every new browser, incognito tab, different device
+      // fetches the real uploaded logo/favicon from DB on every page load.
+      (function() {
+        var API = 'https://api.exponentgrow.in';
+
+        function applyFavicon(url) {
+          if (!url || !url.startsWith('http')) return;
+          var link = document.getElementById('favicon');
+          if (link) {
+            link.type = 'image/png';
+            link.href = url;
+          } else {
+            var l = document.createElement('link');
+            l.id = 'favicon'; l.rel = 'icon'; l.type = 'image/png'; l.href = url;
+            document.head.appendChild(l);
+          }
+          try { localStorage.setItem('exponent_platform_favicon', url); } catch(e) {}
+        }
+
+        function applyLogo(url) {
+          if (!url || !url.startsWith('http')) return;
+          try { localStorage.setItem('exponent_platform_logo', url); } catch(e) {}
+          window.__exponent_logo_url = url;
+        }
+
+        fetch(API + '/platform/auth/public-branding')
+          .then(function(r) { return r.ok ? r.json() : {}; })
+          .then(function(data) {
+            if (data.favicon_url) applyFavicon(data.favicon_url);
+            if (data.logo_url)    applyLogo(data.logo_url);
+          })
+          .catch(function() {});
       })();
     </script>
   </head>
