@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api";
 
-// ── Favicon helpers ──────────────────────────────────────────────────────────
 const PLATFORM_FAVICON_KEY = "exponent_platform_favicon";
 const PLATFORM_LOGO_KEY    = "exponent_platform_logo";
 
@@ -17,7 +16,6 @@ function applyPlatformFavicon(url) {
   document.head.appendChild(link);
 }
 
-// ── Generic image uploader component ────────────────────────────────────────
 function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape = "square" }) {
   const [uploading, setUploading] = useState(false);
   const [preview,   setPreview]   = useState(currentUrl || localStorage.getItem(storageKey) || null);
@@ -34,14 +32,8 @@ function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape 
     setError(""); setSaved(false);
 
     const allowed = ["image/jpeg","image/png","image/webp","image/gif","image/svg+xml","image/x-icon","image/vnd.microsoft.icon"];
-    if (!allowed.includes(file.type)) {
-      setError("Invalid file type. Use JPEG, PNG, WebP, SVG, or ICO.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setError("File too large. Max 2MB.");
-      return;
-    }
+    if (!allowed.includes(file.type)) { setError("Invalid file type. Use JPEG, PNG, WebP, SVG, or ICO."); return; }
+    if (file.size > 2 * 1024 * 1024) { setError("File too large. Max 2MB."); return; }
 
     const reader = new FileReader();
     reader.onload = async (ev) => {
@@ -49,14 +41,11 @@ function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape 
       setPreview(base64);
       setUploading(true);
       try {
-        // Upload to Cloudinary via the server's /api/upload/platform endpoint.
-        // Note: platform api.js baseURL = https://api.exponentgrow.in (no /api prefix),
-        // so we must include /api explicitly here.
+        // platform api.js baseURL = https://api.exponentgrow.in (no /api suffix)
+        // so we must include /api explicitly here
         const res = await API.post("/api/upload/platform", { image: base64 });
         const url = res.data.url;
-        // Cache in localStorage so it persists on this browser
         if (storageKey) localStorage.setItem(storageKey, url);
-        // Notify parent so it can save to DB
         onUploaded(url);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
@@ -70,9 +59,7 @@ function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape 
 
   const handleRemove = () => {
     if (storageKey) localStorage.removeItem(storageKey);
-    setPreview(null);
-    setSaved(false);
-    setError("");
+    setPreview(null); setSaved(false); setError("");
     onUploaded(null);
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -81,12 +68,9 @@ function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape 
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
         <div style={{
-          width: size, height: size,
-          borderRadius: radius,
-          overflow: "hidden",
+          width: size, height: size, borderRadius: radius, overflow: "hidden",
           background: "var(--bg3)", border: "1px solid var(--border)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}>
           {preview
             ? <img src={preview} alt={`${label} preview`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
@@ -94,30 +78,16 @@ function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape 
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ display: "flex", gap: 8 }}>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading}
-            >
+            <button className="btn btn-secondary btn-sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
               {uploading ? "Uploading…" : preview ? `Change ${label}` : `Upload ${label}`}
             </button>
             {preview && (
-              <button
-                className="btn btn-sm"
-                style={{ color: "var(--red)", border: "1px solid var(--red)", background: "transparent" }}
-                onClick={handleRemove}
-              >
+              <button className="btn btn-sm" style={{ color: "var(--red)", border: "1px solid var(--red)", background: "transparent" }} onClick={handleRemove}>
                 Remove
               </button>
             )}
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/x-icon"
-            style={{ display: "none" }}
-            onChange={handleFile}
-          />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/x-icon" style={{ display: "none" }} onChange={handleFile} />
           {hint && <div style={{ fontSize: 11, color: "var(--text3)" }}>{hint}</div>}
         </div>
       </div>
@@ -127,11 +97,9 @@ function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape 
   );
 }
 
-// ── Main Settings page ───────────────────────────────────────────────────────
 export default function Settings() {
   const { admin } = useAuth();
 
-  // Branding state — stored in DB via /platform/branding endpoint
   const [branding, setBranding]       = useState({
     favicon_url: localStorage.getItem(PLATFORM_FAVICON_KEY) || "",
     logo_url:    localStorage.getItem(PLATFORM_LOGO_KEY)    || "",
@@ -140,19 +108,18 @@ export default function Settings() {
   const [brandMsg,    setBrandMsg]    = useState("");
   const [brandErr,    setBrandErr]    = useState("");
 
-  // Password state
   const [pwForm, setPwForm]     = useState({ current: "", newPw: "", confirm: "" });
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg]       = useState("");
   const [pwErr, setPwErr]       = useState("");
 
-  // On mount: apply cached favicon + fetch saved branding from DB
   useEffect(() => {
     const cached = localStorage.getItem(PLATFORM_FAVICON_KEY);
     if (cached) applyPlatformFavicon(cached);
 
-    // Try to load from DB (stored in platform_admins or a settings table)
-    API.get("/platform/branding").then(r => {
+    // FIX: route is mounted at /platform/auth in index.js, so path is /platform/auth/branding
+    // (NOT /platform/branding which gave 404)
+    API.get("/platform/auth/branding").then(r => {
       if (r.data?.favicon_url) {
         setBranding(b => ({ ...b, favicon_url: r.data.favicon_url }));
         localStorage.setItem(PLATFORM_FAVICON_KEY, r.data.favicon_url);
@@ -162,21 +129,20 @@ export default function Settings() {
         setBranding(b => ({ ...b, logo_url: r.data.logo_url }));
         localStorage.setItem(PLATFORM_LOGO_KEY, r.data.logo_url);
       }
-    }).catch(() => {}); // silently ignore if endpoint not yet implemented
+    }).catch(() => {});
   }, []);
 
   const saveBranding = async () => {
     setBrandSaving(true); setBrandErr(""); setBrandMsg("");
     try {
-      await API.put("/platform/branding", branding);
+      // FIX: same — correct path is /platform/auth/branding
+      await API.put("/platform/auth/branding", branding);
       if (branding.favicon_url) {
         localStorage.setItem(PLATFORM_FAVICON_KEY, branding.favicon_url);
         applyPlatformFavicon(branding.favicon_url);
       }
-      if (branding.logo_url) {
-        localStorage.setItem(PLATFORM_LOGO_KEY, branding.logo_url);
-      }
-      setBrandMsg("✅ Branding saved! Favicon & logo will now show on all browsers.");
+      if (branding.logo_url) localStorage.setItem(PLATFORM_LOGO_KEY, branding.logo_url);
+      setBrandMsg("✅ Branding saved! Favicon & logo will now show on all browsers and devices.");
       setTimeout(() => setBrandMsg(""), 4000);
     } catch (e) {
       setBrandErr(e.response?.data?.error || "Failed to save branding.");
@@ -205,7 +171,6 @@ export default function Settings() {
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header"><div className="card-title">Platform Owner Profile</div></div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          {/* Logo shown in profile */}
           {branding.logo_url
             ? <img src={branding.logo_url} alt="logo" style={{ width: 60, height: 60, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--border)" }} />
             : <div style={{ width: 60, height: 60, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 24 }}>
@@ -227,7 +192,7 @@ export default function Settings() {
         </div>
         <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 20, lineHeight: 1.6 }}>
           Favicon and logo are uploaded to Cloudinary and <strong>saved in the database</strong>.
-          They will appear on <strong>all browsers and devices</strong>, not just this one.
+          They will appear on <strong>all browsers and devices</strong> — not just this one.
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 20 }}>
@@ -248,7 +213,7 @@ export default function Settings() {
               storageKey={PLATFORM_LOGO_KEY}
               currentUrl={branding.logo_url}
               onUploaded={url => setBranding(b => ({ ...b, logo_url: url || "" }))}
-              hint="Shown in your profile and platform header. PNG or SVG recommended."
+              hint="Shown in your profile. PNG or SVG recommended."
               shape="circle"
             />
           </div>
@@ -266,18 +231,13 @@ export default function Settings() {
         <div className="card-header"><div className="card-title">Change Password</div></div>
         <div className="form-grid" style={{ gridTemplateColumns: "1fr" }}>
           {[
-            { label: "Current Password",     key: "current" },
-            { label: "New Password",          key: "newPw" },
-            { label: "Confirm New Password",  key: "confirm" },
+            { label: "Current Password",    key: "current" },
+            { label: "New Password",         key: "newPw" },
+            { label: "Confirm New Password", key: "confirm" },
           ].map(f => (
             <div className="form-group" key={f.key}>
               <label>{f.label}</label>
-              <input
-                type="password"
-                value={pwForm[f.key]}
-                onChange={e => setPwForm(p => ({ ...p, [f.key]: e.target.value }))}
-                placeholder="••••••••"
-              />
+              <input type="password" value={pwForm[f.key]} onChange={e => setPwForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder="••••••••" />
             </div>
           ))}
           {pwErr && <div className="alert alert-danger">{pwErr}</div>}
