@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api";
 
+// ── Favicon helpers ──────────────────────────────────────────────────────────
 const PLATFORM_FAVICON_KEY = "exponent_platform_favicon";
+const PLATFORM_LOGO_KEY    = "exponent_platform_logo";
 
-// Apply favicon to the platform tab dynamically
 function applyPlatformFavicon(url) {
   const existing = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
   existing.forEach(el => el.parentNode.removeChild(el));
@@ -16,17 +17,16 @@ function applyPlatformFavicon(url) {
   document.head.appendChild(link);
 }
 
-function FaviconUploader() {
+// ── Generic image uploader component ────────────────────────────────────────
+function ImageUploader({ label, storageKey, currentUrl, onUploaded, hint, shape = "square" }) {
   const [uploading, setUploading] = useState(false);
-  const [preview,   setPreview]   = useState(null);
+  const [preview,   setPreview]   = useState(currentUrl || localStorage.getItem(storageKey) || null);
   const [error,     setError]     = useState("");
   const [saved,     setSaved]     = useState(false);
   const fileRef = useRef();
 
-  useEffect(() => {
-    const saved = localStorage.getItem(PLATFORM_FAVICON_KEY);
-    if (saved) setPreview(saved);
-  }, []);
+  const size   = shape === "circle" ? 60 : 48;
+  const radius = shape === "circle" ? "50%" : 10;
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
@@ -39,7 +39,7 @@ function FaviconUploader() {
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      setError("File too large. Max 2MB for favicon.");
+      setError("File too large. Max 2MB.");
       return;
     }
 
@@ -49,29 +49,31 @@ function FaviconUploader() {
       setPreview(base64);
       setUploading(true);
       try {
-        // FIX: platform api.js baseURL is https://api.exponentgrow.in (no /api suffix)
-        // so we must include /api in the path here.
-        // The server mounts upload at /api/upload, so the full endpoint is /api/upload/platform.
+        // Upload to Cloudinary via the server's /api/upload/platform endpoint.
+        // Note: platform api.js baseURL = https://api.exponentgrow.in (no /api prefix),
+        // so we must include /api explicitly here.
         const res = await API.post("/api/upload/platform", { image: base64 });
         const url = res.data.url;
-        localStorage.setItem(PLATFORM_FAVICON_KEY, url);
-        applyPlatformFavicon(url);
+        // Cache in localStorage so it persists on this browser
+        if (storageKey) localStorage.setItem(storageKey, url);
+        // Notify parent so it can save to DB
+        onUploaded(url);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } catch (err) {
         setError(err.response?.data?.error || "Upload failed. Please check Cloudinary env vars on Render.");
-        setPreview(localStorage.getItem(PLATFORM_FAVICON_KEY) || null);
+        setPreview(currentUrl || localStorage.getItem(storageKey) || null);
       } finally { setUploading(false); }
     };
     reader.readAsDataURL(file);
   };
 
   const handleRemove = () => {
-    localStorage.removeItem(PLATFORM_FAVICON_KEY);
-    applyPlatformFavicon(null);
+    if (storageKey) localStorage.removeItem(storageKey);
     setPreview(null);
     setSaved(false);
     setError("");
+    onUploaded(null);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -79,14 +81,16 @@ function FaviconUploader() {
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
         <div style={{
-          width: 48, height: 48, borderRadius: 10, overflow: "hidden",
+          width: size, height: size,
+          borderRadius: radius,
+          overflow: "hidden",
           background: "var(--bg3)", border: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "center",
           flexShrink: 0,
         }}>
           {preview
-            ? <img src={preview} alt="favicon preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-            : <span style={{ fontSize: 22, color: "var(--text3)" }}>🌐</span>}
+            ? <img src={preview} alt={`${label} preview`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            : <span style={{ fontSize: 22, color: "var(--text3)" }}>{shape === "circle" ? "👤" : "🖼️"}</span>}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ display: "flex", gap: 8 }}>
@@ -95,10 +99,14 @@ function FaviconUploader() {
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
             >
-              {uploading ? "Uploading…" : preview ? "Change Favicon" : "Upload Favicon"}
+              {uploading ? "Uploading…" : preview ? `Change ${label}` : `Upload ${label}`}
             </button>
             {preview && (
-              <button className="btn btn-sm" style={{ color: "var(--red)", border: "1px solid var(--red)", background: "transparent" }} onClick={handleRemove}>
+              <button
+                className="btn btn-sm"
+                style={{ color: "var(--red)", border: "1px solid var(--red)", background: "transparent" }}
+                onClick={handleRemove}
+              >
                 Remove
               </button>
             )}
@@ -110,28 +118,70 @@ function FaviconUploader() {
             style={{ display: "none" }}
             onChange={handleFile}
           />
-          <div style={{ fontSize: 11, color: "var(--text3)" }}>
-            Recommended: 32×32 or 64×64 PNG/ICO. Shown in the browser tab.
-          </div>
+          {hint && <div style={{ fontSize: 11, color: "var(--text3)" }}>{hint}</div>}
         </div>
       </div>
-      {error  && <div style={{ fontSize: 12, color: "var(--red)",   marginTop: 4 }}>{error}</div>}
-      {saved  && <div style={{ fontSize: 12, color: "var(--green)", marginTop: 4 }}>✅ Favicon updated — check your browser tab!</div>}
+      {error && <div style={{ fontSize: 12, color: "var(--red)",   marginTop: 4 }}>{error}</div>}
+      {saved  && <div style={{ fontSize: 12, color: "var(--green)", marginTop: 4 }}>✅ Uploaded successfully!</div>}
     </div>
   );
 }
 
+// ── Main Settings page ───────────────────────────────────────────────────────
 export default function Settings() {
   const { admin } = useAuth();
+
+  // Branding state — stored in DB via /platform/branding endpoint
+  const [branding, setBranding]       = useState({
+    favicon_url: localStorage.getItem(PLATFORM_FAVICON_KEY) || "",
+    logo_url:    localStorage.getItem(PLATFORM_LOGO_KEY)    || "",
+  });
+  const [brandSaving, setBrandSaving] = useState(false);
+  const [brandMsg,    setBrandMsg]    = useState("");
+  const [brandErr,    setBrandErr]    = useState("");
+
+  // Password state
   const [pwForm, setPwForm]     = useState({ current: "", newPw: "", confirm: "" });
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg]       = useState("");
   const [pwErr, setPwErr]       = useState("");
 
+  // On mount: apply cached favicon + fetch saved branding from DB
   useEffect(() => {
-    const saved = localStorage.getItem(PLATFORM_FAVICON_KEY);
-    if (saved) applyPlatformFavicon(saved);
+    const cached = localStorage.getItem(PLATFORM_FAVICON_KEY);
+    if (cached) applyPlatformFavicon(cached);
+
+    // Try to load from DB (stored in platform_admins or a settings table)
+    API.get("/platform/branding").then(r => {
+      if (r.data?.favicon_url) {
+        setBranding(b => ({ ...b, favicon_url: r.data.favicon_url }));
+        localStorage.setItem(PLATFORM_FAVICON_KEY, r.data.favicon_url);
+        applyPlatformFavicon(r.data.favicon_url);
+      }
+      if (r.data?.logo_url) {
+        setBranding(b => ({ ...b, logo_url: r.data.logo_url }));
+        localStorage.setItem(PLATFORM_LOGO_KEY, r.data.logo_url);
+      }
+    }).catch(() => {}); // silently ignore if endpoint not yet implemented
   }, []);
+
+  const saveBranding = async () => {
+    setBrandSaving(true); setBrandErr(""); setBrandMsg("");
+    try {
+      await API.put("/platform/branding", branding);
+      if (branding.favicon_url) {
+        localStorage.setItem(PLATFORM_FAVICON_KEY, branding.favicon_url);
+        applyPlatformFavicon(branding.favicon_url);
+      }
+      if (branding.logo_url) {
+        localStorage.setItem(PLATFORM_LOGO_KEY, branding.logo_url);
+      }
+      setBrandMsg("✅ Branding saved! Favicon & logo will now show on all browsers.");
+      setTimeout(() => setBrandMsg(""), 4000);
+    } catch (e) {
+      setBrandErr(e.response?.data?.error || "Failed to save branding.");
+    } finally { setBrandSaving(false); }
+  };
 
   const changePw = async () => {
     setPwErr(""); setPwMsg("");
@@ -140,7 +190,6 @@ export default function Settings() {
     if (pwForm.newPw !== pwForm.confirm) return setPwErr("Passwords do not match");
     setPwSaving(true);
     try {
-      // FIX: same prefix issue — platform auth route is at /platform/auth/change-password
       await API.post("/platform/auth/change-password", { current: pwForm.current, newPassword: pwForm.newPw });
       setPwMsg("✅ Password updated successfully!");
       setPwForm({ current: "", newPw: "", confirm: "" });
@@ -156,9 +205,13 @@ export default function Settings() {
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header"><div className="card-title">Platform Owner Profile</div></div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 24 }}>
-            {admin?.name?.[0]?.toUpperCase()}
-          </div>
+          {/* Logo shown in profile */}
+          {branding.logo_url
+            ? <img src={branding.logo_url} alt="logo" style={{ width: 60, height: 60, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--border)" }} />
+            : <div style={{ width: 60, height: 60, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 24 }}>
+                {admin?.name?.[0]?.toUpperCase()}
+              </div>
+          }
           <div>
             <div style={{ fontSize: 17, fontWeight: 700 }}>{admin?.name}</div>
             <div style={{ fontSize: 13, color: "var(--text3)" }}>{admin?.email}</div>
@@ -172,12 +225,40 @@ export default function Settings() {
         <div className="card-header">
           <div className="card-title">Platform Branding</div>
         </div>
-        <div style={{ marginBottom: 6, fontSize: 13, fontWeight: 600, color: "var(--text2)" }}>Browser Tab Favicon</div>
-        <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
-          This favicon appears in the browser tab when you are logged in to <strong>exponentgrow.in</strong>.
-          Stored in your browser — upload once and it persists.
+        <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 20, lineHeight: 1.6 }}>
+          Favicon and logo are uploaded to Cloudinary and <strong>saved in the database</strong>.
+          They will appear on <strong>all browsers and devices</strong>, not just this one.
         </div>
-        <FaviconUploader />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", marginBottom: 8 }}>Browser Tab Favicon</div>
+            <ImageUploader
+              label="Favicon"
+              storageKey={PLATFORM_FAVICON_KEY}
+              currentUrl={branding.favicon_url}
+              onUploaded={url => setBranding(b => ({ ...b, favicon_url: url || "" }))}
+              hint="32×32 or 64×64 PNG/ICO. Shown in the browser tab."
+            />
+          </div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", marginBottom: 8 }}>Platform Logo</div>
+            <ImageUploader
+              label="Logo"
+              storageKey={PLATFORM_LOGO_KEY}
+              currentUrl={branding.logo_url}
+              onUploaded={url => setBranding(b => ({ ...b, logo_url: url || "" }))}
+              hint="Shown in your profile and platform header. PNG or SVG recommended."
+              shape="circle"
+            />
+          </div>
+        </div>
+
+        {brandErr && <div style={{ fontSize: 12, color: "var(--red)",   marginBottom: 10 }}>{brandErr}</div>}
+        {brandMsg && <div style={{ fontSize: 12, color: "var(--green)", marginBottom: 10 }}>{brandMsg}</div>}
+        <button className="btn btn-primary btn-sm" onClick={saveBranding} disabled={brandSaving}>
+          {brandSaving ? "Saving…" : "Save Branding to Database"}
+        </button>
       </div>
 
       {/* ── Change password ── */}
@@ -185,13 +266,18 @@ export default function Settings() {
         <div className="card-header"><div className="card-title">Change Password</div></div>
         <div className="form-grid" style={{ gridTemplateColumns: "1fr" }}>
           {[
-            { label: "Current Password", key: "current" },
-            { label: "New Password",     key: "newPw" },
-            { label: "Confirm New Password", key: "confirm" },
+            { label: "Current Password",     key: "current" },
+            { label: "New Password",          key: "newPw" },
+            { label: "Confirm New Password",  key: "confirm" },
           ].map(f => (
             <div className="form-group" key={f.key}>
               <label>{f.label}</label>
-              <input type="password" value={pwForm[f.key]} onChange={e => setPwForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder="••••••••" />
+              <input
+                type="password"
+                value={pwForm[f.key]}
+                onChange={e => setPwForm(p => ({ ...p, [f.key]: e.target.value }))}
+                placeholder="••••••••"
+              />
             </div>
           ))}
           {pwErr && <div className="alert alert-danger">{pwErr}</div>}
@@ -225,7 +311,7 @@ export default function Settings() {
         </div>
         <div className="divider" />
         <div style={{ fontSize: 11, color: "var(--text3)" }}>
-          🚀 Future roadmap: subdomain routing (nishchay.exponent.app), Razorpay billing automation, usage analytics webhooks, white-label academy portals.
+          🚀 Future roadmap: subdomain routing, Razorpay billing automation, usage analytics webhooks, white-label academy portals.
         </div>
       </div>
     </div>
