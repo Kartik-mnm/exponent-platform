@@ -16,14 +16,14 @@ import Revenue       from "./pages/Revenue";
 import "./index.css";
 
 const NAV = [
-  { id: "dashboard",     label: "Dashboard",     icon: "⬡",  group: "main" },
-  { id: "academies",     label: "Academies",     icon: "🏫",  group: "main" },
-  { id: "leads",         label: "Leads",         icon: "📬",  group: "main" },
-  { id: "subscriptions", label: "Subscriptions", icon: "💳",  group: "main" },
-  { id: "revenue",       label: "Revenue",       icon: "💰",  group: "main" },
-  { id: "analytics",    label: "Analytics",     icon: "📊",  group: "main" },
-  { id: "audit",        label: "Audit Log",     icon: "📋",  group: "system" },
-  { id: "settings",     label: "Settings",      icon: "⚙",   group: "system" },
+  { id: "dashboard",     label: "Dashboard",     icon: "\u2b21",  group: "main" },
+  { id: "academies",     label: "Academies",     icon: "\ud83c\udfeb",  group: "main" },
+  { id: "leads",         label: "Leads",         icon: "\ud83d\udcec",  group: "main" },
+  { id: "subscriptions", label: "Subscriptions", icon: "\ud83d\udcb3",  group: "main" },
+  { id: "revenue",       label: "Revenue",       icon: "\ud83d\udcb0",  group: "main" },
+  { id: "analytics",    label: "Analytics",     icon: "\ud83d\udcca",  group: "main" },
+  { id: "audit",        label: "Audit Log",     icon: "\ud83d\udccb",  group: "system" },
+  { id: "settings",     label: "Settings",      icon: "\u2699",   group: "system" },
 ];
 
 const PAGE_META = {
@@ -37,7 +37,24 @@ const PAGE_META = {
   settings:      { title: "Settings",       sub: "Platform configuration" },
 };
 
-const ACADEMY_APP = "https://acadfee-app.onrender.com";
+const ACADEMY_APP = "https://app.exponentgrow.in";
+
+// Exponent logo SVG component — shown in sidebar on all browsers
+function ExponentLogo({ size = 34 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#a855f7" />
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="8" fill="url(#logo-grad)" />
+      <text x="16" y="23" textAnchor="middle"
+        fontFamily="Arial,sans-serif" fontSize="20" fontWeight="900" fill="white">E</text>
+    </svg>
+  );
+}
 
 function Shell() {
   const { admin, logout } = useAuth();
@@ -70,7 +87,7 @@ function Shell() {
     <div className="shell">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="logo-icon">E</div>
+          <ExponentLogo size={34} />
           <div>
             <div className="logo-mark">EXPONENT</div>
             <div className="logo-sub">Platform Control</div>
@@ -93,10 +110,10 @@ function Shell() {
         <div className="sidebar-footer">
           <div className="admin-avatar">{admin.name?.[0]?.toUpperCase() || "A"}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="admin-name" style={{ overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{admin.name}</div>
+            <div className="admin-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{admin.name}</div>
             <div className="admin-role">Platform Owner</div>
           </div>
-          <button className="logout-btn" onClick={logout} title="Sign out">⏻</button>
+          <button className="logout-btn" onClick={logout} title="Sign out">&#9211;</button>
         </div>
       </aside>
       <main className="main">
@@ -106,7 +123,7 @@ function Shell() {
             <div className="topbar-sub">{meta.sub}</div>
           </div>
           <div style={{ fontSize: 11, color: "var(--text3)", padding: "5px 10px", background: "var(--bg3)", borderRadius: 6, border: "1px solid var(--border)" }}>
-            {new Date().toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short", year:"numeric" })}
+            {new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
           </div>
         </div>
         <div className="page-body"><Page onNavigate={setPage} /></div>
