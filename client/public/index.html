@@ -3,29 +3,27 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Exponent Platform — Academy Management Control Panel" />
+    <meta name="theme-color" content="#0f0c29" />
+    <meta name="description" content="Exponent — Run Your Academy Like a Pro. All-in-one academy management software for coaching institutes." />
 
-    <!-- Default favicon: inline SVG so the browser never hits /favicon.ico -->
-    <!-- The JS below immediately overrides it with the saved Cloudinary URL if available -->
+    <!-- Default favicon: inline SVG so browser never 404s on /favicon.ico -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231d4ed8'/><text x='16' y='23' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='900' fill='white'>E</text></svg>" />
 
-    <title>Exponent Platform</title>
+    <title>Exponent — Academy Management Software</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     </style>
 
-    <!-- Apply saved favicon immediately on page load — before React boots -->
-    <!-- This eliminates the /favicon.ico 404 on all browsers -->
+    <!-- Apply saved custom favicon from localStorage immediately -->
     <script>
       (function() {
-        var saved = localStorage.getItem('exponent_platform_favicon');
+        var saved = localStorage.getItem('exponent_landing_favicon');
         if (saved) {
           var links = document.querySelectorAll("link[rel*='icon']");
           links.forEach(function(el) { el.parentNode.removeChild(el); });
           var link = document.createElement('link');
           link.rel  = 'icon';
-          link.type = saved.endsWith('.ico') ? 'image/x-icon' : 'image/png';
           link.href = saved + '?v=' + Date.now();
           document.head.appendChild(link);
         }
