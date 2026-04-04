@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api";
 
-// ——————————————————————————————————————————————————
-// Apply favicon to this browser tab
 function applyFavicon(url) {
   if (!url) return;
   const existing = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
@@ -16,7 +14,6 @@ function applyFavicon(url) {
   document.head.appendChild(link);
 }
 
-// —— Uploader used for both favicon and logo —————————————————————————
 function ImageUploader({ label, currentUrl, onUploaded, accept, hint }) {
   const [uploading, setUploading] = useState(false);
   const [preview,   setPreview]   = useState(currentUrl || null);
@@ -40,14 +37,15 @@ function ImageUploader({ label, currentUrl, onUploaded, accept, hint }) {
       setPreview(base64);
       setUploading(true);
       try {
-        // Upload to Cloudinary
-        const res = await API.post("/upload/platform", { image: base64 });
+        // FIX: api.js baseURL = https://api.exponentgrow.in (no /api suffix)
+        // so the upload path must include /api explicitly
+        const res = await API.post("/api/upload/platform", { image: base64 });
         const url = res.data.url;
         onUploaded(url);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } catch (err) {
-        setError(err.response?.data?.error || "Upload failed.");
+        setError(err.response?.data?.error || "Upload failed. Check Cloudinary env vars on Render.");
         setPreview(currentUrl || null);
       } finally { setUploading(false); }
     };
@@ -81,7 +79,6 @@ function ImageUploader({ label, currentUrl, onUploaded, accept, hint }) {
   );
 }
 
-// ——————————————————————————————————————————————————
 export default function Settings() {
   const { admin } = useAuth();
   const [pwForm,   setPwForm]   = useState({ current: "", newPw: "", confirm: "" });
@@ -89,30 +86,26 @@ export default function Settings() {
   const [pwMsg,    setPwMsg]    = useState("");
   const [pwErr,    setPwErr]    = useState("");
 
-  // Branding loaded from server (not localStorage)
   const [branding, setBranding] = useState({ favicon_url: null, logo_url: null });
   const [brandSaving, setBrandSaving] = useState(false);
   const [brandMsg,    setBrandMsg]    = useState("");
 
-  // Load current branding from server on mount
   useEffect(() => {
+    // FIX: correct path includes /platform/auth prefix
     API.get("/platform/auth/branding")
       .then(r => setBranding(r.data))
       .catch(() => {});
   }, []);
 
-  // Save branding to DB and apply immediately to this tab
   const saveBranding = async (field, url) => {
     const updated = { ...branding, [field]: url };
     setBranding(updated);
     setBrandSaving(true);
     try {
       await API.put("/platform/auth/branding", updated);
-      setBrandMsg("✅ Branding saved to server \u2014 visible on all browsers!");
+      setBrandMsg("✅ Branding saved to server — visible on all browsers!");
       setTimeout(() => setBrandMsg(""), 4000);
-      // Apply to this tab immediately
       if (field === "favicon_url") applyFavicon(url);
-      // Cache in localStorage for instant next-visit (optional, server is authoritative)
       try {
         if (field === "favicon_url") localStorage.setItem("exponent_favicon_url", url);
         if (field === "logo_url")    localStorage.setItem("exponent_logo_url", url);
@@ -155,19 +148,19 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Platform Branding — saved to DB, works on ALL browsers */}
+      {/* Platform Branding */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <div className="card-title">Platform Branding</div>
         </div>
         <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, padding: "8px 12px", background: "var(--bg3)", borderRadius: 8, border: "1px solid var(--border)" }}>
-          💡 These are saved to the <strong>server database</strong> — they appear on <strong>all browsers and devices</strong>, including incognito and mobile.
+          💡 Saved to the <strong>server database</strong> — appear on <strong>all browsers and devices</strong>, including incognito and mobile.
         </div>
 
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text2)", marginBottom: 6 }}>Browser Tab Favicon</div>
           <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 10 }}>
-            Shown in the browser tab. Recommended: 32x32 PNG or ICO.
+            Shown in the browser tab. Recommended: 32×32 PNG or ICO.
           </div>
           <ImageUploader
             label="Favicon"
@@ -180,7 +173,7 @@ export default function Settings() {
         <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text2)", marginBottom: 6 }}>Sidebar Logo</div>
           <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 10 }}>
-            Shown in the sidebar of the admin panel. Recommended: square PNG, at least 128x128.
+            Shown in the sidebar. Recommended: square PNG, at least 128×128.
           </div>
           <ImageUploader
             label="Logo"
@@ -210,7 +203,7 @@ export default function Settings() {
               <label>{f.label}</label>
               <input type="password" value={pwForm[f.key]}
                 onChange={e => setPwForm(p => ({ ...p, [f.key]: e.target.value }))}
-                placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" />
+                placeholder="••••••••" />
             </div>
           ))}
           {pwErr && <div className="alert alert-danger">{pwErr}</div>}
