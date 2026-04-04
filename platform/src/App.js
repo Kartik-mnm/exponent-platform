@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import API from "./api";
 import Landing       from "./pages/Landing";
 import Login         from "./pages/Login";
 import Dashboard     from "./pages/Dashboard";
@@ -38,11 +37,15 @@ const PAGE_META = {
   settings:      { title: "Settings",       sub: "Platform configuration" },
 };
 
-const ACADEMY_APP  = "https://app.exponentgrow.in";
-const LOGO_KEY     = "exponent_platform_logo";
-const FAVICON_KEY  = "exponent_platform_favicon";
+const ACADEMY_APP = "https://app.exponentgrow.in";
+const LOGO_KEY    = "exponent_platform_logo";
+const FAVICON_KEY = "exponent_platform_favicon";
 
-// ── Apply favicon to the browser tab ────────────────────────────────────────
+// ── The ONE correct public endpoint — no auth required ────────────────────────
+// Backend: GET /platform/auth/public-branding → { logo_url, favicon_url }
+// This is what makes the logo appear on ANY browser/device without login.
+const PUBLIC_BRANDING_URL = "https://api.exponentgrow.in/platform/auth/public-branding";
+
 function applyFavicon(url) {
   if (!url) return;
   const existing = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
@@ -55,45 +58,49 @@ function applyFavicon(url) {
 }
 
 /**
- * Fetch logo + favicon from DB on mount (runs once per login session).
- * Caches in localStorage so subsequent renders are instant.
- * This is the KEY fix: localStorage is per-device, but the DB is universal.
- * Every device/browser now gets the correct logo by fetching from DB.
+ * Fetches branding from the DB using the PUBLIC (no-auth) endpoint.
+ * Works on any browser, any device, even before login.
+ * The URL is hardcoded (not via API axios) so it never hits the wrong path.
  */
-async function fetchAndCacheBranding() {
+async function fetchPublicBranding() {
   try {
-    const res = await API.get("/platform/branding");
-    const { logo_url, favicon_url } = res.data || {};
-    if (logo_url) {
-      localStorage.setItem(LOGO_KEY, logo_url);
+    const res = await fetch(PUBLIC_BRANDING_URL);
+    if (!res.ok) return {};
+    const data = await res.json();
+    if (data.logo_url)    localStorage.setItem(LOGO_KEY,    data.logo_url);
+    if (data.favicon_url) {
+      localStorage.setItem(FAVICON_KEY, data.favicon_url);
+      applyFavicon(data.favicon_url);
     }
-    if (favicon_url) {
-      localStorage.setItem(FAVICON_KEY, favicon_url);
-      applyFavicon(favicon_url);
-    }
-    return { logo_url, favicon_url };
+    return data;
   } catch {
-    // Silently ignore — server may not have this endpoint yet
     return {};
   }
 }
 
+// Run immediately on module load — before React even mounts —
+// so cached favicon is applied as fast as possible.
+(function applyCachedBranding() {
+  const favicon = localStorage.getItem(FAVICON_KEY);
+  if (favicon) applyFavicon(favicon);
+})();
+
 /**
- * Exponent logo mark.
- * 1. Shows cached localStorage logo immediately (instant, no flicker).
- * 2. On mount fetches from DB → updates logo if DB has a newer value.
- * This means every browser/device always shows the correct logo.
+ * ExponentLogo:
+ * 1. Shows localStorage logo instantly (no flicker on repeat visits).
+ * 2. Fetches from DB on every mount → updates if DB has changed.
+ *    This is the KEY: DB is shared, localStorage is per-browser.
+ *    Any browser that mounts this component gets the real logo from DB.
  */
 function ExponentLogo({ size = 34 }) {
   const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem(LOGO_KEY) || null);
 
   useEffect(() => {
-    // Fetch from DB and update if different from cache
-    fetchAndCacheBranding().then(({ logo_url }) => {
-      if (logo_url) setLogoUrl(logo_url);
+    fetchPublicBranding().then(data => {
+      if (data.logo_url) setLogoUrl(data.logo_url);
     });
 
-    // Also listen for same-tab storage changes (e.g. Settings page upload)
+    // Also sync if Settings page saves a new logo in the same tab
     const onStorage = (e) => {
       if (e.key === LOGO_KEY) setLogoUrl(e.newValue || null);
     };
@@ -107,21 +114,16 @@ function ExponentLogo({ size = 34 }) {
         src={logoUrl}
         alt="Platform logo"
         style={{ width: size, height: size, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
-        onError={() => {
-          // Cloudinary URL broken — clear cache and fall back to SVG
-          localStorage.removeItem(LOGO_KEY);
-          setLogoUrl(null);
-        }}
+        onError={() => { localStorage.removeItem(LOGO_KEY); setLogoUrl(null); }}
       />
     );
   }
 
-  // Default SVG fallback — shown before DB fetch completes or if no logo set
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="0%"   stopColor="#6366f1" />
           <stop offset="100%" stopColor="#a855f7" />
         </linearGradient>
       </defs>
@@ -154,8 +156,8 @@ function Shell() {
     subscriptions: Subscriptions, revenue: Revenue,
     analytics: Analytics, settings: Settings, audit: AuditLog,
   };
-  const Page  = pages[page] || Dashboard;
-  const meta  = PAGE_META[page] || {};
+  const Page    = pages[page] || Dashboard;
+  const meta    = PAGE_META[page] || {};
   const mainNav = NAV.filter(n => n.group === "main");
   const sysNav  = NAV.filter(n => n.group === "system");
 
