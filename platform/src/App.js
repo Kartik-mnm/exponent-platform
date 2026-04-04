@@ -16,14 +16,14 @@ import Revenue       from "./pages/Revenue";
 import "./index.css";
 
 const NAV = [
-  { id: "dashboard",     label: "Dashboard",     icon: "\u2b21",  group: "main" },
-  { id: "academies",     label: "Academies",     icon: "\ud83c\udfeb",  group: "main" },
-  { id: "leads",         label: "Leads",         icon: "\ud83d\udcec",  group: "main" },
-  { id: "subscriptions", label: "Subscriptions", icon: "\ud83d\udcb3",  group: "main" },
-  { id: "revenue",       label: "Revenue",       icon: "\ud83d\udcb0",  group: "main" },
-  { id: "analytics",    label: "Analytics",     icon: "\ud83d\udcca",  group: "main" },
-  { id: "audit",        label: "Audit Log",     icon: "\ud83d\udccb",  group: "system" },
-  { id: "settings",     label: "Settings",      icon: "\u2699",   group: "system" },
+  { id: "dashboard",     label: "Dashboard",     icon: "⬡",  group: "main" },
+  { id: "academies",     label: "Academies",     icon: "🏫",  group: "main" },
+  { id: "leads",         label: "Leads",         icon: "📬",  group: "main" },
+  { id: "subscriptions", label: "Subscriptions", icon: "💳",  group: "main" },
+  { id: "revenue",       label: "Revenue",       icon: "💰",  group: "main" },
+  { id: "analytics",    label: "Analytics",     icon: "📊",  group: "main" },
+  { id: "audit",        label: "Audit Log",     icon: "📋",  group: "system" },
+  { id: "settings",     label: "Settings",      icon: "⚙",   group: "system" },
 ];
 
 const PAGE_META = {
@@ -38,92 +38,14 @@ const PAGE_META = {
 };
 
 const ACADEMY_APP = "https://app.exponentgrow.in";
-const LOGO_KEY    = "exponent_platform_logo";
-const FAVICON_KEY = "exponent_platform_favicon";
 
-// ── The ONE correct public endpoint — no auth required ────────────────────────
-// Backend: GET /platform/auth/public-branding → { logo_url, favicon_url }
-// This is what makes the logo appear on ANY browser/device without login.
-const PUBLIC_BRANDING_URL = "https://api.exponentgrow.in/platform/auth/public-branding";
-
-function applyFavicon(url) {
-  if (!url) return;
-  const existing = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
-  existing.forEach(el => el.parentNode.removeChild(el));
-  const link = document.createElement("link");
-  link.rel  = "icon";
-  link.type = url.endsWith(".ico") ? "image/x-icon" : "image/png";
-  link.href = url + "?v=" + Date.now();
-  document.head.appendChild(link);
-}
-
-/**
- * Fetches branding from the DB using the PUBLIC (no-auth) endpoint.
- * Works on any browser, any device, even before login.
- * The URL is hardcoded (not via API axios) so it never hits the wrong path.
- */
-async function fetchPublicBranding() {
-  try {
-    const res = await fetch(PUBLIC_BRANDING_URL);
-    if (!res.ok) return {};
-    const data = await res.json();
-    if (data.logo_url)    localStorage.setItem(LOGO_KEY,    data.logo_url);
-    if (data.favicon_url) {
-      localStorage.setItem(FAVICON_KEY, data.favicon_url);
-      applyFavicon(data.favicon_url);
-    }
-    return data;
-  } catch {
-    return {};
-  }
-}
-
-// Run immediately on module load — before React even mounts —
-// so cached favicon is applied as fast as possible.
-(function applyCachedBranding() {
-  const favicon = localStorage.getItem(FAVICON_KEY);
-  if (favicon) applyFavicon(favicon);
-})();
-
-/**
- * ExponentLogo:
- * 1. Shows localStorage logo instantly (no flicker on repeat visits).
- * 2. Fetches from DB on every mount → updates if DB has changed.
- *    This is the KEY: DB is shared, localStorage is per-browser.
- *    Any browser that mounts this component gets the real logo from DB.
- */
-function ExponentLogo({ size = 34 }) {
-  const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem(LOGO_KEY) || null);
-
-  useEffect(() => {
-    fetchPublicBranding().then(data => {
-      if (data.logo_url) setLogoUrl(data.logo_url);
-    });
-
-    // Also sync if Settings page saves a new logo in the same tab
-    const onStorage = (e) => {
-      if (e.key === LOGO_KEY) setLogoUrl(e.newValue || null);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  if (logoUrl) {
-    return (
-      <img
-        src={logoUrl}
-        alt="Platform logo"
-        style={{ width: size, height: size, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
-        onError={() => { localStorage.removeItem(LOGO_KEY); setLogoUrl(null); }}
-      />
-    );
-  }
-
+// Default purple-gradient E logo (SVG) shown when no custom logo is uploaded
+function DefaultLogo({ size = 34 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#6366f1" />
+          <stop offset="0%" stopColor="#6366f1" />
           <stop offset="100%" stopColor="#a855f7" />
         </linearGradient>
       </defs>
@@ -139,6 +61,23 @@ function Shell() {
   const [page, setPage]   = useState("dashboard");
   const [view, setView]   = useState("landing");
   const [signupData, setSignupData] = useState(null);
+  // Logo URL from server — falls back to default E logo if not set
+  const [logoUrl, setLogoUrl] = useState(
+    () => { try { return localStorage.getItem("exponent_logo_url") || null; } catch(e) { return null; } }
+  );
+
+  // Fetch branding from server whenever admin logs in
+  useEffect(() => {
+    fetch("https://api.exponentgrow.in/platform/auth/public-branding")
+      .then(r => r.json())
+      .then(data => {
+        if (data.logo_url) {
+          setLogoUrl(data.logo_url);
+          try { localStorage.setItem("exponent_logo_url", data.logo_url); } catch(e) {}
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   if (!admin) {
     if (view === "get-started")
@@ -156,8 +95,8 @@ function Shell() {
     subscriptions: Subscriptions, revenue: Revenue,
     analytics: Analytics, settings: Settings, audit: AuditLog,
   };
-  const Page    = pages[page] || Dashboard;
-  const meta    = PAGE_META[page] || {};
+  const Page  = pages[page] || Dashboard;
+  const meta  = PAGE_META[page] || {};
   const mainNav = NAV.filter(n => n.group === "main");
   const sysNav  = NAV.filter(n => n.group === "system");
 
@@ -165,7 +104,9 @@ function Shell() {
     <div className="shell">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <ExponentLogo size={34} />
+          {logoUrl
+            ? <img src={logoUrl} alt="Logo" style={{ width: 34, height: 34, borderRadius: 8, objectFit: "cover" }} />
+            : <DefaultLogo size={34} />}
           <div>
             <div className="logo-mark">EXPONENT</div>
             <div className="logo-sub">Platform Control</div>
@@ -191,7 +132,7 @@ function Shell() {
             <div className="admin-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{admin.name}</div>
             <div className="admin-role">Platform Owner</div>
           </div>
-          <button className="logout-btn" onClick={logout} title="Sign out">&#9211;</button>
+          <button className="logout-btn" onClick={logout} title="Sign out">⏻</button>
         </div>
       </aside>
       <main className="main">
