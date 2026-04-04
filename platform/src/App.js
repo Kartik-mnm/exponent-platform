@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Landing       from "./pages/Landing";
 import Login         from "./pages/Login";
@@ -38,9 +38,42 @@ const PAGE_META = {
 };
 
 const ACADEMY_APP = "https://app.exponentgrow.in";
+const LOGO_KEY    = "exponent_platform_logo";
 
-// Exponent logo SVG component — shown in sidebar on all browsers
+/**
+ * Exponent logo — shows the uploaded logo image if one has been saved,
+ * otherwise falls back to the default SVG "E" mark.
+ * Reads from localStorage (set by Settings.js after upload + DB save).
+ */
 function ExponentLogo({ size = 34 }) {
+  const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem(LOGO_KEY) || null);
+
+  // Re-read from localStorage if Settings page updates it while shell is mounted
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === LOGO_KEY) setLogoUrl(e.newValue || null);
+    };
+    window.addEventListener("storage", onStorage);
+    // Also poll once — storage event doesn't fire on same-tab writes
+    const interval = setInterval(() => {
+      const current = localStorage.getItem(LOGO_KEY);
+      setLogoUrl(prev => prev !== current ? current : prev);
+    }, 2000);
+    return () => { window.removeEventListener("storage", onStorage); clearInterval(interval); };
+  }, []);
+
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt="Platform logo"
+        style={{ width: size, height: size, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
+        onError={() => setLogoUrl(null)} // if Cloudinary URL breaks, fall back to SVG
+      />
+    );
+  }
+
+  // Default SVG fallback
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <defs>
