@@ -1,6 +1,6 @@
 {
   "name": "exponent-platform-panel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",
@@ -13,7 +13,6 @@
     "build": "CI=false react-scripts build",
     "vercel-build": "CI=false react-scripts build"
   },
-  "proxy": "https://acadfee.onrender.com",
   "browserslist": {
     "production": [">0.2%", "not dead", "not op_mini all"],
     "development": ["last 1 chrome version"]
