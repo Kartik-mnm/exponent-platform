@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import API from "./api";
 import Landing       from "./pages/Landing";
 import Login         from "./pages/Login";
 import Dashboard     from "./pages/Dashboard";
@@ -37,29 +38,67 @@ const PAGE_META = {
   settings:      { title: "Settings",       sub: "Platform configuration" },
 };
 
-const ACADEMY_APP = "https://app.exponentgrow.in";
-const LOGO_KEY    = "exponent_platform_logo";
+const ACADEMY_APP  = "https://app.exponentgrow.in";
+const LOGO_KEY     = "exponent_platform_logo";
+const FAVICON_KEY  = "exponent_platform_favicon";
+
+// ── Apply favicon to the browser tab ────────────────────────────────────────
+function applyFavicon(url) {
+  if (!url) return;
+  const existing = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
+  existing.forEach(el => el.parentNode.removeChild(el));
+  const link = document.createElement("link");
+  link.rel  = "icon";
+  link.type = url.endsWith(".ico") ? "image/x-icon" : "image/png";
+  link.href = url + "?v=" + Date.now();
+  document.head.appendChild(link);
+}
 
 /**
- * Exponent logo — shows the uploaded logo image if one has been saved,
- * otherwise falls back to the default SVG "E" mark.
- * Reads from localStorage (set by Settings.js after upload + DB save).
+ * Fetch logo + favicon from DB on mount (runs once per login session).
+ * Caches in localStorage so subsequent renders are instant.
+ * This is the KEY fix: localStorage is per-device, but the DB is universal.
+ * Every device/browser now gets the correct logo by fetching from DB.
+ */
+async function fetchAndCacheBranding() {
+  try {
+    const res = await API.get("/platform/branding");
+    const { logo_url, favicon_url } = res.data || {};
+    if (logo_url) {
+      localStorage.setItem(LOGO_KEY, logo_url);
+    }
+    if (favicon_url) {
+      localStorage.setItem(FAVICON_KEY, favicon_url);
+      applyFavicon(favicon_url);
+    }
+    return { logo_url, favicon_url };
+  } catch {
+    // Silently ignore — server may not have this endpoint yet
+    return {};
+  }
+}
+
+/**
+ * Exponent logo mark.
+ * 1. Shows cached localStorage logo immediately (instant, no flicker).
+ * 2. On mount fetches from DB → updates logo if DB has a newer value.
+ * This means every browser/device always shows the correct logo.
  */
 function ExponentLogo({ size = 34 }) {
   const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem(LOGO_KEY) || null);
 
-  // Re-read from localStorage if Settings page updates it while shell is mounted
   useEffect(() => {
+    // Fetch from DB and update if different from cache
+    fetchAndCacheBranding().then(({ logo_url }) => {
+      if (logo_url) setLogoUrl(logo_url);
+    });
+
+    // Also listen for same-tab storage changes (e.g. Settings page upload)
     const onStorage = (e) => {
       if (e.key === LOGO_KEY) setLogoUrl(e.newValue || null);
     };
     window.addEventListener("storage", onStorage);
-    // Also poll once — storage event doesn't fire on same-tab writes
-    const interval = setInterval(() => {
-      const current = localStorage.getItem(LOGO_KEY);
-      setLogoUrl(prev => prev !== current ? current : prev);
-    }, 2000);
-    return () => { window.removeEventListener("storage", onStorage); clearInterval(interval); };
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   if (logoUrl) {
@@ -68,12 +107,16 @@ function ExponentLogo({ size = 34 }) {
         src={logoUrl}
         alt="Platform logo"
         style={{ width: size, height: size, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
-        onError={() => setLogoUrl(null)} // if Cloudinary URL breaks, fall back to SVG
+        onError={() => {
+          // Cloudinary URL broken — clear cache and fall back to SVG
+          localStorage.removeItem(LOGO_KEY);
+          setLogoUrl(null);
+        }}
       />
     );
   }
 
-  // Default SVG fallback
+  // Default SVG fallback — shown before DB fetch completes or if no logo set
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <defs>
