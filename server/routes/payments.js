@@ -58,6 +58,12 @@ router.post("/", authenticate, async (req, res) => {
     if (!frRows[0]) return res.status(404).json({ error: "Fee record not found" });
     const fr = frRows[0];
 
+    const due = parseFloat(fr.amount_due);
+    const paidSoFar = parseFloat(fr.amount_paid);
+    if (parsedAmount > (due - paidSoFar) + 0.01) {
+      return res.status(400).json({ error: `Payment amount (${parsedAmount}) exceeds the outstanding balance (${due - paidSoFar}).` });
+    }
+
     const receipt = receiptNo();
     const { rows } = await db.query(
       `INSERT INTO payments (fee_record_id, student_id, branch_id, amount, payment_mode, transaction_ref, paid_on, collected_by, notes, receipt_no, academy_id)

@@ -14,12 +14,13 @@ app.use(cors({
       'http://localhost:3000',
       'http://localhost:3001',
     ];
-    if (!origin || allowed.includes(origin) ||
-        origin.endsWith('.vercel.app') ||
-        origin.endsWith('.onrender.com')) {
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else if (origin.endsWith('.exponentgrow.in')) {
       callback(null, true);
     } else {
-      callback(null, true); // allow all — tighten per-domain when custom domain added
+      console.warn(`[CORS] Blocked: ${origin}`);
+      callback(new Error(`CORS blocked: origin ${origin} not allowed`));
     }
   },
   credentials: true,
