@@ -333,8 +333,9 @@ const FOOTER_LINKS = {
   Company: [
     { label:"About",            action:"scroll", id:"about" },
     { label:"Founder Story",    action:"scroll", id:"about" },
-    { label:"Privacy Policy",   action:"href",   href:`mailto:${OWNER_EMAIL}?subject=Privacy Policy` },
-    { label:"Terms of Service", action:"href",   href:`mailto:${OWNER_EMAIL}?subject=Terms of Service` },
+    { label:"Privacy Policy",   action:"href",   href:"/privacy" },
+    { label:"Terms of Service", action:"href",   href:"/terms" },
+    { label:"Contact",          action:"href",   href:"/contact" },
   ],
   Support: [
     { label:"Help Center",      action:"href", href:`mailto:${OWNER_EMAIL}?subject=Help` },
@@ -373,8 +374,9 @@ function Footer() {
       <div style={{borderTop:`1px solid ${C.border}`,paddingTop:24,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
         <div style={{fontSize:12,color:C.t3}}>© {year} Exponent Platform. All rights reserved. Made with ❤️ in India.</div>
         <div style={{display:"flex",gap:20}}>
-          <a href={`mailto:${OWNER_EMAIL}?subject=Privacy Policy`} style={{fontSize:12,color:C.t3,textDecoration:"none"}}>Privacy Policy</a>
-          <a href={`mailto:${OWNER_EMAIL}?subject=Terms of Service`} style={{fontSize:12,color:C.t3,textDecoration:"none"}}>Terms of Service</a>
+          <a href="/privacy" style={{fontSize:12,color:C.t3,textDecoration:"none"}}>Privacy Policy</a>
+          <a href="/terms" style={{fontSize:12,color:C.t3,textDecoration:"none"}}>Terms of Service</a>
+          <a href="/contact" style={{fontSize:12,color:C.t3,textDecoration:"none"}}>Contact</a>
           <button onClick={()=>scrollTo("security")} style={{fontSize:12,color:C.t3,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:"inherit"}}>Security</button>
         </div>
       </div>

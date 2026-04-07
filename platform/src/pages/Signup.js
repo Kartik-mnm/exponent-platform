@@ -165,7 +165,10 @@ export default function Signup({ onBack, onSuccess }) {
           </button>
 
           <p style={{ textAlign: "center", fontSize: 12, color: C.t3, marginTop: 16, lineHeight: 1.6 }}>
-            By signing up you agree to our Terms of Service and Privacy Policy.
+            By signing up you agree to our{" "}
+            <a href="/terms" style={{ color: C.acc, textDecoration: "none" }}>Terms of Service</a>
+            {" "}and{" "}
+            <a href="/privacy" style={{ color: C.acc, textDecoration: "none" }}>Privacy Policy</a>.
           </p>
         </div>
       </div>

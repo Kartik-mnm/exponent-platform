@@ -13,6 +13,9 @@ import SignupSuccess  from "./pages/SignupSuccess";
 import AuditLog      from "./pages/AuditLog";
 import Leads         from "./pages/Leads";
 import Revenue       from "./pages/Revenue";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Contact       from "./pages/Contact";
 import "./index.css";
 
 const NAV = [
@@ -152,5 +155,8 @@ function Shell() {
 }
 
 export default function App() {
+  if (window.location.pathname === "/privacy") return <PrivacyPolicy />;
+  if (window.location.pathname === "/terms") return <TermsOfService />;
+  if (window.location.pathname === "/contact") return <Contact />;
   return <AuthProvider><Shell /></AuthProvider>;
 }
