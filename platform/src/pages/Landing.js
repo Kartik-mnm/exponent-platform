@@ -45,11 +45,27 @@ const scrollTo = (id) => {
 function Navbar({ onGetStarted, onLogin }) {
   const [scrolled,   setScrolled]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoUrl,    setLogoUrl]    = useState(
+    () => { try { return localStorage.getItem("exponent_logo_url") || null; } catch { return null; } }
+  );
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  // Fetch platform logo from the public-branding endpoint
+  useEffect(() => {
+    fetch("https://api.exponentgrow.in/platform/auth/public-branding")
+      .then(r => r.json())
+      .then(data => {
+        if (data.logo_url) {
+          setLogoUrl(data.logo_url);
+          try { localStorage.setItem("exponent_logo_url", data.logo_url); } catch {}
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const navLinks = [
@@ -65,7 +81,10 @@ function Navbar({ onGetStarted, onLogin }) {
     <>
       <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 5%",height:64,display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled||mobileOpen?`${C.bg}ee`:"transparent",backdropFilter:scrolled||mobileOpen?"blur(20px)":"none",borderBottom:scrolled||mobileOpen?`1px solid ${C.border}`:"1px solid transparent",transition:"all 0.3s"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.acc},${C.pur})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:900,fontSize:15,boxShadow:`0 4px 14px ${C.acc}55`}}>E</div>
+          {logoUrl
+            ? <img src={logoUrl} alt="Exponent" style={{width:34,height:34,borderRadius:9,objectFit:"contain"}} />
+            : <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.acc},${C.pur})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:900,fontSize:15,boxShadow:`0 4px 14px ${C.acc}55`}}>E</div>
+          }
           <div>
             <div style={{fontSize:15,fontWeight:800,letterSpacing:"0.06em",background:`linear-gradient(135deg,${C.acc2},${C.pur})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>EXPONENT</div>
             <div style={{fontSize:9,color:C.t3,letterSpacing:"0.1em",textTransform:"uppercase"}}>Academy OS</div>
