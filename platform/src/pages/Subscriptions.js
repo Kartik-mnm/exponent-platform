@@ -12,21 +12,44 @@ function daysLeft(dateStr) {
   return Math.ceil((new Date(dateStr) - new Date()) / 86400000);
 }
 
+// A subscription is truly "expired" only if the date is past AND it's still marked active
+// (meaning the admin hasn't suspended it yet = needs action)
+function isExpiredAndActive(academy) {
+  const d = daysLeft(academy.trial_ends_at);
+  return d !== null && d < 0 && academy.is_active;
+}
+
 function ExpiryBadge({ date }) {
   if (!date) return <span className="badge badge-gray">No Expiry</span>;
   const d = daysLeft(date);
   if (d < 0)   return <span className="badge badge-red">Expired {Math.abs(d)}d ago</span>;
+  if (d === 0) return <span className="badge badge-red">Expires today</span>;
   if (d <= 7)  return <span className="badge badge-red">{d}d left</span>;
   if (d <= 30) return <span className="badge badge-yellow">{d}d left</span>;
   return <span className="badge badge-green">{d}d left</span>;
 }
 
+// Format a Date object as YYYY-MM-DD for the date input
+function toDateInputValue(date) {
+  return date.toISOString().split("T")[0];
+}
+
 function EditSubModal({ academy, onClose, onSaved }) {
+  // BUG FIX: if current expiry is already past (expired), auto-suggest
+  // today + 30 days as the new expiry so admin doesn't accidentally save
+  // with a stale expired date and think nothing changed.
+  const currentExpiry = academy.trial_ends_at ? academy.trial_ends_at.split("T")[0] : "";
+  const isCurrentlyExpired = currentExpiry && daysLeft(academy.trial_ends_at) < 0;
+
+  const suggestedExpiry = isCurrentlyExpired
+    ? toDateInputValue(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+    : currentExpiry;
+
   const [form, setForm] = useState({
     plan:          academy.plan || "basic",
     max_students:  academy.max_students || 200,
     max_branches:  academy.max_branches || 3,
-    trial_ends_at: academy.trial_ends_at ? academy.trial_ends_at.split("T")[0] : "",
+    trial_ends_at: suggestedExpiry,
     is_active:     academy.is_active !== false,
   });
   const [saving, setSaving] = useState(false);
@@ -42,11 +65,23 @@ function EditSubModal({ academy, onClose, onSaved }) {
   const save = async () => {
     setSaving(true); setErr("");
     try {
-      await API.put(`/platform/academies/${academy.id}`, form);
+      // Send is_active: true whenever admin explicitly saves — they're renewing
+      const payload = {
+        ...form,
+        // If they set an expiry in the future and status is active, ensure is_active=true
+        is_active: form.is_active,
+        // If expiry is set to future date, auto-activate
+        ...(form.trial_ends_at && daysLeft(form.trial_ends_at) >= 0 && form.is_active
+          ? { is_active: true }
+          : {}),
+      };
+      await API.put(`/platform/academies/${academy.id}`, payload);
       onSaved();
-    } catch (e) { setErr(e.response?.data?.error || "Failed"); }
+    } catch (e) { setErr(e.response?.data?.error || "Failed to save"); }
     finally { setSaving(false); }
   };
+
+  const expiryDaysLeft = form.trial_ends_at ? daysLeft(form.trial_ends_at) : null;
 
   return (
     <div className="modal-overlay">
@@ -56,6 +91,15 @@ function EditSubModal({ academy, onClose, onSaved }) {
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
+
+          {/* Show a warning if the original expiry was expired */}
+          {isCurrentlyExpired && (
+            <div className="alert alert-warning" style={{ marginBottom: 16, fontSize: 12 }}>
+              ⚠️ This subscription was expired. The expiry date has been pre-filled to
+              <strong> +30 days from today</strong>. Update it as needed before saving.
+            </div>
+          )}
+
           <div className="form-group full" style={{ marginBottom: 20 }}>
             <label>Select Plan</label>
             <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
@@ -86,7 +130,22 @@ function EditSubModal({ academy, onClose, onSaved }) {
             <div className="form-group full">
               <label>Subscription Expiry Date</label>
               <input type="date" value={form.trial_ends_at} onChange={e => set("trial_ends_at", e.target.value)} />
-              <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>Leave blank for no expiry. System auto-suspends when expired.</div>
+              {/* Show live feedback on the chosen date */}
+              {expiryDaysLeft !== null && (
+                <div style={{
+                  fontSize: 11, marginTop: 5, fontWeight: 600,
+                  color: expiryDaysLeft < 0 ? "var(--red)" : expiryDaysLeft <= 7 ? "var(--yellow)" : "var(--green)",
+                }}>
+                  {expiryDaysLeft < 0
+                    ? `⚠️ This date is ${Math.abs(expiryDaysLeft)} days in the past — the account will show as expired!`
+                    : expiryDaysLeft === 0
+                    ? "⚠️ Expires today"
+                    : `✓ ${expiryDaysLeft} days from today`}
+                </div>
+              )}
+              {!form.trial_ends_at && (
+                <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>Leave blank for no expiry.</div>
+              )}
             </div>
             <div className="form-group full">
               <label>Access Status</label>
@@ -131,11 +190,11 @@ export default function Subscriptions() {
 
   const filtered = academies.filter(a => {
     if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (filter === "active")   return a.is_active;
+    if (filter === "active")    return a.is_active;
     if (filter === "suspended") return !a.is_active;
     if (filter === "expiring") {
       const d = daysLeft(a.trial_ends_at);
-      return d !== null && d <= 30;
+      return d !== null && d <= 30 && d >= 0;
     }
     if (filter === "expired") {
       const d = daysLeft(a.trial_ends_at);
@@ -144,8 +203,10 @@ export default function Subscriptions() {
     return true;
   });
 
+  // Only show alert for academies that are still "active" but have expired date
+  // (= needs admin attention). Don't alert for ones that are already suspended.
   const expiring = academies.filter(a => { const d = daysLeft(a.trial_ends_at); return d !== null && d <= 14 && d >= 0; });
-  const expired  = academies.filter(a => { const d = daysLeft(a.trial_ends_at); return d !== null && d < 0; });
+  const expired  = academies.filter(isExpiredAndActive);
 
   return (
     <div>
@@ -163,7 +224,7 @@ export default function Subscriptions() {
         </div>
       )}
 
-      {/* Plan cards */}
+      {/* Plan summary cards */}
       <div className="stats-grid" style={{ marginBottom: 24 }}>
         {Object.entries(PLAN_CONFIG).map(([key, cfg]) => {
           const count = academies.filter(a => a.plan === key).length;
@@ -242,7 +303,13 @@ export default function Subscriptions() {
         )}
       </div>
 
-      {editTarget && <EditSubModal academy={editTarget} onClose={() => setEditTarget(null)} onSaved={() => { setEditTarget(null); load(); }} />}
+      {editTarget && (
+        <EditSubModal
+          academy={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={() => { setEditTarget(null); load(); }}
+        />
+      )}
     </div>
   );
 }
