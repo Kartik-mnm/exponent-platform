@@ -8,20 +8,25 @@ const cors    = require('cors');
 const app     = express();
 
 // ── CORS ─────────────────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://app.exponentgrow.in',
+  'https://exponentgrow.in',
+];
+
 app.use(cors({
   origin: (origin, callback) => {
-    const allowed = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-    ];
-    if (!origin || allowed.includes(origin)) {
-      callback(null, true);
-    } else if (origin.endsWith('.exponentgrow.in')) {
-      callback(null, true);
-    } else {
-      console.warn(`[CORS] Blocked: ${origin}`);
-      callback(new Error(`CORS blocked: origin ${origin} not allowed`));
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    
+    // Allow all subdomains of exponentgrow.in (and the root domain)
+    if (/^https?:\/\/(?:[a-z0-9-]+\.)*exponentgrow\.in$/i.test(origin)) {
+      return callback(null, true);
     }
+
+    console.warn(`[CORS] Blocked: ${origin}`);
+    callback(new Error(`CORS blocked: origin ${origin} not allowed`));
   },
   credentials: true,
 }));
