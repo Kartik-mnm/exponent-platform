@@ -211,7 +211,7 @@ export default function Settings() {
       </div>
 
       {/* Platform Security / Co-Founder Access */}
-      {admin?.role === "platform_owner" && (
+      {admin?.role !== "viewer" && (
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-header">
             <div className="card-title">Access Control</div>
