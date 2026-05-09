@@ -1,5 +1,5 @@
-// ── Leads Page ────────────────────────────────────────────────────────────────────
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import API from "../api";
 
 const WA_NUMBER = "918956419453";
@@ -15,6 +15,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Leads() {
+  const { admin }                   = useAuth();
   const [leads, setLeads]           = useState([]);
   const [loading, setLoading]       = useState(true);
   const [search, setSearch]         = useState("");
@@ -38,6 +39,7 @@ export default function Leads() {
   );
 
   const handleConvert = async (lead) => {
+    if (admin?.role === "viewer") return;
     if (!window.confirm(`Convert "${lead.name}" to a 7-day trial academy?`)) return;
     setConverting(lead.id);
     try {
@@ -50,6 +52,7 @@ export default function Leads() {
   };
 
   const handleDiscard = async (lead) => {
+    if (admin?.role === "viewer") return;
     if (!window.confirm(`Discard lead "${lead.name}"? This cannot be undone.`)) return;
     setDiscarding(lead.id);
     try {
@@ -142,7 +145,8 @@ export default function Leads() {
                       </div>
                     </div>
 
-                    {/* Actions */}
+                    {/* Actions — Hidden for cofounder/viewer */}
+                    {admin?.role !== "viewer" && (
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                       {/* WhatsApp follow-up */}
                       <a
@@ -186,6 +190,7 @@ export default function Leads() {
                         {discarding === lead.id ? "..." : "🗑"}
                       </button>
                     </div>
+                    )}
                   </div>
                 </div>
               ))}

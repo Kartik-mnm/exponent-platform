@@ -104,9 +104,8 @@ function Shell() {
   let sysNav  = NAV.filter(n => n.group === "system");
 
   if (admin?.role === "viewer") {
-    mainNav = mainNav.filter(n => n.id === "academies" || n.id === "revenue");
+    mainNav = mainNav.filter(n => ["dashboard", "academies", "leads", "revenue", "analytics"].includes(n.id));
     sysNav  = [];
-    if (page !== "academies" && page !== "revenue") setPage("academies");
   }
 
   return (
