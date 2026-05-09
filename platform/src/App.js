@@ -61,7 +61,7 @@ function DefaultLogo({ size = 34 }) {
 
 function Shell() {
   const { admin, logout } = useAuth();
-  const [page, setPage]   = useState("dashboard");
+  const [page, setPage]   = useState(admin?.role === "viewer" ? "academies" : "dashboard");
   const [view, setView]   = useState("landing");
   const [signupData, setSignupData] = useState(null);
   // Logo URL from server — falls back to default E logo if not set
@@ -100,8 +100,14 @@ function Shell() {
   };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
-  const mainNav = NAV.filter(n => n.group === "main");
-  const sysNav  = NAV.filter(n => n.group === "system");
+  let mainNav = NAV.filter(n => n.group === "main");
+  let sysNav  = NAV.filter(n => n.group === "system");
+
+  if (admin?.role === "viewer") {
+    mainNav = mainNav.filter(n => n.id === "academies" || n.id === "revenue");
+    sysNav  = [];
+    if (page !== "academies" && page !== "revenue") setPage("academies");
+  }
 
   return (
     <div className="shell">
@@ -133,7 +139,7 @@ function Shell() {
           <div className="admin-avatar">{admin.name?.[0]?.toUpperCase() || "A"}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="admin-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{admin.name}</div>
-            <div className="admin-role">Platform Owner</div>
+            <div className="admin-role">{admin.role === "viewer" ? "Platform Viewer" : "Platform Owner"}</div>
           </div>
           <button className="logout-btn" onClick={logout} title="Sign out">⏻</button>
         </div>
