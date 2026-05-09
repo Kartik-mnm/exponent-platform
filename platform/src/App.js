@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API from "./api";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Landing       from "./pages/Landing";
 import Login         from "./pages/Login";
