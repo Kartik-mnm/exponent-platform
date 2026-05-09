@@ -90,12 +90,32 @@ export default function Settings() {
   const [brandSaving, setBrandSaving] = useState(false);
   const [brandMsg,    setBrandMsg]    = useState("");
 
+  const [platformSettings, setPlatformSettings] = useState({});
+  const [settingMsg, setSettingMsg] = useState("");
+
   useEffect(() => {
     // FIX: correct path includes /platform/auth prefix
     API.get("/platform/auth/branding")
       .then(r => setBranding(r.data))
       .catch(() => {});
-  }, []);
+
+    if (admin?.role === "platform_owner") {
+      API.get("/platform/auth/settings")
+        .then(r => setPlatformSettings(r.data))
+        .catch(() => {});
+    }
+  }, [admin]);
+
+  const updatePlatformSetting = async (key, val) => {
+    setPlatformSettings(p => ({ ...p, [key]: val }));
+    try {
+      await API.put("/platform/auth/settings", { [key]: val });
+      setSettingMsg("✓ Setting updated");
+      setTimeout(() => setSettingMsg(""), 3000);
+    } catch (e) {
+      setSettingMsg("⚠ Failed to update");
+    }
+  };
 
   const saveBranding = async (field, url) => {
     const updated = { ...branding, [field]: url };
@@ -189,6 +209,32 @@ export default function Settings() {
           </div>
         )}
       </div>
+
+      {/* Platform Security / Co-Founder Access */}
+      {admin?.role === "platform_owner" && (
+        <div className="card" style={{ marginBottom: 20 }}>
+          <div className="card-header">
+            <div className="card-title">Access Control</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 0" }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text1)" }}>Co-Founder Access</div>
+              <div style={{ fontSize: 12, color: "var(--text3)" }}>
+                Allow or disallow co-founder accounts to log in and view platform data.
+              </div>
+            </div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={platformSettings.allow_viewer_access ?? true} 
+                onChange={(e) => updatePlatformSetting("allow_viewer_access", e.target.checked)}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+          {settingMsg && <div style={{ marginTop: 12, fontSize: 12, color: "var(--green)" }}>{settingMsg}</div>}
+        </div>
+      )}
 
       {/* Change password */}
       <div className="card" style={{ marginBottom: 20 }}>

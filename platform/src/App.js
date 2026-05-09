@@ -71,16 +71,24 @@ function Shell() {
 
   // Fetch branding from server whenever admin logs in
   useEffect(() => {
-    fetch("https://api.exponentgrow.in/platform/auth/public-branding")
-      .then(r => r.json())
-      .then(data => {
+    API.get("/platform/auth/public-branding")
+      .then(r => {
+        const data = r.data;
         if (data.logo_url) {
           setLogoUrl(data.logo_url);
           try { localStorage.setItem("exponent_logo_url", data.logo_url); } catch(e) {}
         }
+        if (data.favicon_url) {
+          setFaviconUrl(data.favicon_url);
+          try { localStorage.setItem("exponent_favicon_url", data.favicon_url); } catch(e) {}
+        }
+        // If co-founder access is disabled and current user is a viewer, force logout
+        if (data.viewer_allowed === false && admin?.role === "viewer") {
+          logout();
+        }
       })
       .catch(() => {});
-  }, []);
+  }, [admin]);
 
   if (!admin) {
     if (view === "get-started")
