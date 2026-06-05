@@ -425,14 +425,60 @@ function Hero({ onGetStarted }) {
    STATS DIVIDER
 ───────────────────────────────────────── */
 function Stats() {
+  const [data, setData] = useState({
+    academies: { v: "2,400", s: "+" },
+    students: { v: "4.8", s: "L" },
+    fees: { v: "₹120", s: "Cr" }
+  });
+
+  useEffect(() => {
+    fetch("https://api.exponentgrow.in/api/public-stats")
+      .then(r => r.json())
+      .then(res => {
+        if (res && typeof res.academiesCount === 'number') {
+          const formattedAcademies = {
+            v: res.academiesCount.toLocaleString('en-IN'),
+            s: res.academiesCount >= 1000 ? "+" : ""
+          };
+          
+          let formattedStudents;
+          if (res.studentsCount >= 100000) {
+            formattedStudents = { v: (res.studentsCount / 100000).toFixed(1), s: "L" };
+          } else {
+            formattedStudents = { v: res.studentsCount.toLocaleString('en-IN'), s: "" };
+          }
+
+          let formattedFees;
+          if (res.feesTotal >= 10000000) {
+            formattedFees = { v: "₹" + (res.feesTotal / 10000000).toFixed(1), s: "Cr" };
+          } else if (res.feesTotal >= 100000) {
+            formattedFees = { v: "₹" + (res.feesTotal / 100000).toFixed(1), s: "L" };
+          } else {
+            formattedFees = { v: "₹" + res.feesTotal.toLocaleString('en-IN'), s: "" };
+          }
+
+          setData({
+            academies: formattedAcademies,
+            students: formattedStudents,
+            fees: formattedFees
+          });
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch public stats:", err);
+      });
+  }, []);
+
+  const statsItems = [
+    { v: data.academies.v, s: data.academies.s, l: "Institutes active" },
+    { v: data.students.v, s: data.students.s, l: "Students managed" },
+    { v: data.fees.v, s: data.fees.s, l: "Fees processed yearly" },
+  ];
+
   return (
     <section style={{ borderTop: `1px solid ${T.bdr}`, borderBottom: `1px solid ${T.bdr}`, padding: "clamp(30px, 6vw, 60px) 6%" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 40 }} className="stats-grid">
-        {[
-          { v: "2,400", s: "+", l: "Institutes active" },
-          { v: "4.8", s: "L", l: "Students managed" },
-          { v: "₹120", s: "Cr", l: "Fees processed yearly" },
-        ].map((s, i) => (
+        {statsItems.map((s, i) => (
           <div key={i} className="stat-col" style={{ textAlign: "left" }}>
             <div style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px" }}>
               {s.v}<span style={{ color: T.a }}>{s.s}</span>

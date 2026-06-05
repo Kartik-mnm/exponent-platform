@@ -89,6 +89,25 @@ app.use('/platform',         platformRoutes);
 app.use('/api/academy',      academyConfigRoutes);
 app.use('/api/onboarding',   onboardingRoutes);   // has own authRateLimit inside
 
+app.get('/api/public-stats', async (req, res) => {
+  try {
+    const db = require('./db');
+    const [academies, students, payments] = await Promise.all([
+      db.query("SELECT COUNT(*) FROM academies WHERE is_active = true"),
+      db.query("SELECT COUNT(*) FROM students"),
+      db.query("SELECT COALESCE(SUM(amount_paid), 0) AS total FROM payments")
+    ]);
+    res.json({
+      academiesCount: parseInt(academies.rows[0].count),
+      studentsCount: parseInt(students.rows[0].count),
+      feesTotal: parseFloat(payments.rows[0].total)
+    });
+  } catch (err) {
+    console.error('[public-stats] Error fetching stats:', err.message);
+    res.status(500).json({ error: 'Failed to fetch public stats' });
+  }
+});
+
 app.get('/', (_, res) => res.json({ status: 'Exponent + AcadFee API running ✅' }));
 
 // ── Global error handler ──────────────────────────────────────
