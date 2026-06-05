@@ -103,17 +103,17 @@ const Label = ({ children }) => (
 
 /* Reusable section heading */
 const SecHeading = ({ label, title, sub, center = false }) => (
-  <div style={{ textAlign: center ? "center" : "left", marginBottom: 54 }}>
+  <div style={{ textAlign: center ? "center" : "left", marginBottom: "clamp(32px, 5vw, 54px)" }}>
     {label && <Label>{label}</Label>}
     <h2 style={{
-      fontSize: "clamp(32px, 4vw, 48px)",
+      fontSize: "clamp(28px, 4vw, 48px)",
       fontWeight: 800, color: T.t1,
       letterSpacing: "-1px", lineHeight: 1.1,
       marginBottom: 16,
     }}>{title}</h2>
     {sub && (
       <p style={{
-        fontSize: 17, color: T.t2,
+        fontSize: "clamp(15px, 2vw, 17px)", color: T.t2,
         maxWidth: center ? 600 : 540,
         margin: center ? "0 auto" : "0",
         lineHeight: 1.6,
@@ -220,10 +220,10 @@ function Navbar({ onGetStarted, onLogin }) {
           <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
             <button
               onClick={onLogin}
+              className="nav-login-btn"
               style={{
                 background: "none", border: "none", cursor: "pointer",
                 fontSize: 14, color: T.t1, fontWeight: 600,
-                display: typeof window !== "undefined" && window.innerWidth < 480 ? "none" : "block",
                 transition: "color 0.15s",
               }}
               onMouseEnter={e => e.target.style.color = T.t2}
@@ -251,6 +251,8 @@ function Navbar({ onGetStarted, onLogin }) {
           background: T.bg, padding: "20px 6% 32px",
           display: "flex", flexDirection: "column", gap: 4,
           borderBottom: `1px solid ${T.bdr}`,
+          maxHeight: "calc(100vh - 70px)",
+          overflowY: "auto",
         }}>
           {navLinks.map(l => (
             <button
@@ -266,7 +268,7 @@ function Navbar({ onGetStarted, onLogin }) {
           ))}
           <div style={{ display: "flex", gap: 12, marginTop: 24, flexDirection: "column" }}>
             <GhostBtn onClick={() => { setMobileOpen(false); onLogin(); }} style={{ width: "100%", padding: "14px" }}>Log in</GhostBtn>
-            <PrimaryBtn onClick={() => { setMobileOpen(false); onGetStarted(); }} large style={{ width: "100%" }}>Get StartedFree</PrimaryBtn>
+            <PrimaryBtn onClick={() => { setMobileOpen(false); onGetStarted(); }} large style={{ width: "100%" }}>Get Started Free</PrimaryBtn>
           </div>
         </div>
       )}
@@ -276,6 +278,9 @@ function Navbar({ onGetStarted, onLogin }) {
           .hamburger-btn{display:block!important}
           .desktop-links{display:none!important}
           .desktop-btn{display:none!important}
+        }
+        @media(max-width:480px){
+          .nav-login-btn{display:none!important}
         }
       `}</style>
     </>
@@ -421,21 +426,48 @@ function Hero({ onGetStarted }) {
 ───────────────────────────────────────── */
 function Stats() {
   return (
-    <section style={{ borderTop: `1px solid ${T.bdr}`, borderBottom: `1px solid ${T.bdr}`, padding: "60px 6%" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 40 }}>
+    <section style={{ borderTop: `1px solid ${T.bdr}`, borderBottom: `1px solid ${T.bdr}`, padding: "clamp(30px, 6vw, 60px) 6%" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 40 }} className="stats-grid">
         {[
           { v: "2,400", s: "+", l: "Institutes active" },
           { v: "4.8", s: "L", l: "Students managed" },
           { v: "₹120", s: "Cr", l: "Fees processed yearly" },
         ].map((s, i) => (
-          <div key={i} style={{ textAlign: "left", borderLeft: i > 0 ? `1px solid ${T.bdr}` : "none", paddingLeft: i > 0 ? 40 : 0 }}>
-            <div style={{ fontSize: "clamp(36px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px" }}>
+          <div key={i} className="stat-col" style={{ textAlign: "left" }}>
+            <div style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px" }}>
               {s.v}<span style={{ color: T.a }}>{s.s}</span>
             </div>
             <div style={{ fontSize: 14, color: T.t2, marginTop: 4, fontWeight: 500 }}>{s.l}</div>
           </div>
         ))}
       </div>
+      <style>{`
+        .stat-col {
+          border-left: 1px solid ${T.bdr};
+          padding-left: 40px;
+        }
+        .stat-col:first-child {
+          border-left: none;
+          padding-left: 0;
+        }
+        @media (max-width: 768px) {
+          .stats-grid {
+            grid-template-columns: 1fr !important;
+            gap: 30px !important;
+          }
+          .stat-col {
+            border-left: none !important;
+            padding-left: 0 !important;
+            border-bottom: 1px solid ${T.bdr};
+            padding-bottom: 20px;
+            text-align: center !important;
+          }
+          .stat-col:last-child {
+            border-bottom: none !important;
+            padding-bottom: 0;
+          }
+        }
+      `}</style>
     </section>
   );
 }
@@ -452,23 +484,23 @@ const FEATS = [
 
 function Features() {
   return (
-    <section id="features" style={{ padding: "120px 6%", borderBottom: `1px solid ${T.bdr}` }}>
+    <section id="features" style={{ padding: "clamp(60px, 8vw, 120px) 6%", borderBottom: `1px solid ${T.bdr}` }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ marginBottom: 60 }}>
+        <div style={{ marginBottom: "clamp(32px, 5vw, 60px)" }}>
           <Label>Features</Label>
-          <h2 style={{ fontSize: "clamp(36px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, maxWidth: 600 }}>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, maxWidth: 600 }}>
             Everything your<br />institute needs
           </h2>
-          <p style={{ fontSize: 18, color: T.t2, marginTop: 24, maxWidth: 600, lineHeight: 1.6 }}>
+          <p style={{ fontSize: "clamp(16px, 2.5vw, 18px)", color: T.t2, marginTop: 24, maxWidth: 600, lineHeight: 1.6 }}>
             A full command center for your academy. Stop juggling between WhatsApp, Excel, and accounting software.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
           {FEATS.map((f, i) => (
             <div key={i} style={{
               background: T.bg2, border: `1px solid ${T.bdr}`,
-              padding: 40, borderRadius: 16,
+              padding: "clamp(24px, 4vw, 40px)", borderRadius: 16,
             }}>
               <div style={{
                 width: 48, height: 48, borderRadius: 12, background: T.bg3, border: `1px solid ${T.bdr}`,
@@ -495,14 +527,14 @@ function HowItWorks() {
     { n: "03", t: "Start operating", d: "Generate ID cards, collect fees, and track attendance all from one place." },
   ];
   return (
-    <section id="how-it-works" style={{ padding: "120px 6%", borderBottom: `1px solid ${T.bdr}` }}>
+    <section id="how-it-works" style={{ padding: "clamp(60px, 8vw, 120px) 6%", borderBottom: `1px solid ${T.bdr}` }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <Label>How it Works</Label>
-        <h2 style={{ fontSize: "clamp(36px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, marginBottom: 60 }}>
+        <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, marginBottom: "clamp(32px, 5vw, 60px)" }}>
           Up and running<br />in 30 minutes
         </h2>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 40 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 40 }}>
           {steps.map((s, i) => (
             <div key={i}>
               <div style={{ fontSize: 16, fontWeight: 800, color: T.a, marginBottom: 16 }}>{s.n}</div>
@@ -535,18 +567,18 @@ const PLANS = [
 
 function Pricing({ onGetStarted }) {
   return (
-    <section id="pricing" style={{ padding: "120px 6%", borderBottom: `1px solid ${T.bdr}` }}>
+    <section id="pricing" style={{ padding: "clamp(60px, 8vw, 120px) 6%", borderBottom: `1px solid ${T.bdr}` }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <Label>Pricing</Label>
-        <h2 style={{ fontSize: "clamp(36px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, marginBottom: 60 }}>
+        <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, marginBottom: "clamp(32px, 5vw, 60px)" }}>
           Simple, honest pricing
         </h2>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24, alignItems: "stretch" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, alignItems: "stretch" }}>
           {PLANS.map((p, i) => (
             <div key={i} style={{
               background: T.bg2, border: `1px solid ${p.popular ? T.a : T.bdr}`,
-              borderRadius: 16, padding: 40,
+              borderRadius: 16, padding: "clamp(24px, 5vw, 40px)",
               position: "relative",
               display: "flex", flexDirection: "column"
             }}>
@@ -608,16 +640,16 @@ function Testimonials() {
     { n: "Sunita Deshpande", r: "BrightFuture Coaching", t: "Setting up 3 branches used to be a nightmare. With Exponent, I manage all of them from one dashboard. The QR scanner saves my staff 30 minutes every day.", c: "#22C55E" }
   ];
   return (
-    <section style={{ padding: "120px 6%", borderBottom: `1px solid ${T.bdr}` }}>
+    <section style={{ padding: "clamp(60px, 8vw, 120px) 6%", borderBottom: `1px solid ${T.bdr}` }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <Label>Trusted by the best</Label>
-        <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, marginBottom: 60 }}>
+        <h2 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 800, color: T.t1, letterSpacing: "-1px", lineHeight: 1.1, marginBottom: "clamp(32px, 5vw, 60px)" }}>
           Loved by 2,400+<br />institute owners
         </h2>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
           {reviews.map((r, i) => (
-            <div key={i} style={{ background: T.bg2, border: `1px solid ${T.bdr}`, padding: "40px", borderRadius: 16 }}>
+            <div key={i} style={{ background: T.bg2, border: `1px solid ${T.bdr}`, padding: "clamp(24px, 5vw, 40px)", borderRadius: 16 }}>
               <div style={{ display: "flex", gap: 4, marginBottom: 24 }}>
                 {[1,2,3,4,5].map(x => <span key={x} style={{ color: T.a, fontSize: 18 }}>★</span>)}
               </div>
@@ -644,22 +676,22 @@ function Testimonials() {
 ───────────────────────────────────────── */
 function FinalCTA({ onGetStarted }) {
   return (
-    <section style={{ padding: "120px 6%" }}>
+    <section style={{ padding: "clamp(60px, 8vw, 120px) 6%" }}>
       <div style={{
         maxWidth: 1200, margin: "0 auto",
         background: `linear-gradient(135deg, ${T.bg2} 0%, ${T.bg} 100%)`,
         border: `1px solid ${T.bdr}`,
-        borderRadius: 24, padding: "80px 6%",
+        borderRadius: 24, padding: "clamp(40px, 6vw, 80px) clamp(20px, 6vw, 80px)",
         textAlign: "center", position: "relative", overflow: "hidden"
       }}>
         {/* Faint Glow */}
         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 600, height: 300, background: T.aDark, filter: "blur(100px)", pointerEvents: "none", zIndex: 0 }} />
 
         <div style={{ position: "relative", zIndex: 2 }}>
-          <h2 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 800, color: T.t1, letterSpacing: "-2px", lineHeight: 1.1, marginBottom: 24 }}>
+          <h2 style={{ fontSize: "clamp(28px, 5vw, 64px)", fontWeight: 800, color: T.t1, letterSpacing: "-2px", lineHeight: 1.1, marginBottom: 24 }}>
             Ready to run your<br />institute smarter?
           </h2>
-          <p style={{ fontSize: 18, color: T.t2, marginBottom: 40, maxWidth: 600, margin: "0 auto 40px" }}>
+          <p style={{ fontSize: "clamp(16px, 2.5vw, 18px)", color: T.t2, marginBottom: 40, maxWidth: 600, margin: "0 auto 40px" }}>
             Join thousands of institutes making the switch. Drop your spreadsheets and bring operations into one platform.
           </p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
@@ -677,8 +709,8 @@ function FinalCTA({ onGetStarted }) {
 ───────────────────────────────────────── */
 function Footer() {
   return (
-    <footer style={{ borderTop: `1px solid ${T.bdr}`, padding: "80px 6% 40px", background: T.bg }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 60 }}>
+    <footer style={{ borderTop: `1px solid ${T.bdr}`, padding: "clamp(40px, 8vw, 80px) 6% clamp(20px, 4vw, 40px)", background: T.bg }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "clamp(24px, 8vw, 80px)" }}>
         <div style={{ maxWidth: 300 }}>
           <div style={{ fontSize: 18, fontWeight: 800, color: T.t1, letterSpacing: "-0.5px", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 24, height: 24, background: T.a, borderRadius: 4, color: "#000", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>E</div>
@@ -689,7 +721,7 @@ function Footer() {
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 80, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "clamp(24px, 8vw, 80px)", flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: T.t1, marginBottom: 20 }}>Product</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -709,7 +741,7 @@ function Footer() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "60px auto 0", borderTop: `1px solid ${T.bdr}`, paddingTop: 32, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: T.t3 }}>
+      <div style={{ maxWidth: 1200, margin: "clamp(30px, 6vw, 60px) auto 0", borderTop: `1px solid ${T.bdr}`, paddingTop: 32, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: T.t3, flexWrap: "wrap", gap: 16 }}>
         <div>© {new Date().getFullYear()} Exponent Platform. All rights reserved.</div>
       </div>
     </footer>
@@ -725,6 +757,7 @@ export default function Landing({ onLogin, onGetStarted }) {
       fontFamily: "'Inter', sans-serif",
       background: T.bg, color: T.t1,
       minHeight: "100vh",
+      overflowX: "hidden",
       WebkitFontSmoothing: "antialiased",
       MozOsxFontSmoothing: "grayscale",
     }}>
