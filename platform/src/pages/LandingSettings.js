@@ -29,6 +29,7 @@ export default function LandingSettings() {
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
   const [msg, setMsg]           = useState(null);
+  const [backendReady, setBackendReady] = useState(true);
   const [stats, setStats]       = useState({
     academies: { v: "2,400", s: "+" },
     students:  { v: "4.8",   s: "L" },
@@ -44,8 +45,12 @@ export default function LandingSettings() {
       .then(r => {
         if (r.data.stats)   setStats(r.data.stats);
         if (r.data.pricing) setPricing(r.data.pricing);
+        setBackendReady(true);
       })
-      .catch(() => {})
+      .catch(err => {
+        // 404 = backend not deployed yet with new route
+        if (err?.response?.status === 404) setBackendReady(false);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -108,8 +113,19 @@ export default function LandingSettings() {
           background: msg.ok ? "#16a34a" : "#dc2626",
           color: "#fff", padding: "12px 20px", borderRadius: 10,
           fontSize: 14, fontWeight: 600, boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-          animation: "fadeIn 0.2s ease"
         }}>{msg.text}</div>
+      )}
+
+      {/* Backend not deployed yet banner */}
+      {!backendReady && (
+        <div style={{ marginBottom: 20, padding: "16px 20px", background: "#7c2d12", border: "1px solid #f97316", borderRadius: 10 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fed7aa", marginBottom: 6 }}>⚠️ Backend Not Updated Yet</div>
+          <div style={{ fontSize: 13, color: "#fdba74", lineHeight: 1.6 }}>
+            The save buttons won't work until Render deploys the latest commit.
+            Go to <strong>Render → your service → Manual Deploy → Deploy latest commit</strong>.
+            After ~2 min, refresh this page.
+          </div>
+        </div>
       )}
 
       {/* Preview link */}
@@ -176,8 +192,8 @@ export default function LandingSettings() {
           ))}
         </div>
 
-        <button style={S.btn} onClick={saveStats} disabled={saving}>
-          {saving ? "Saving…" : "💾 Save Stats"}
+        <button style={S.btn} onClick={saveStats} disabled={saving || !backendReady}>
+          {saving ? "Saving…" : !backendReady ? "Deploy backend first" : "💾 Save Stats"}
         </button>
       </div>
 
@@ -220,8 +236,8 @@ export default function LandingSettings() {
           ))}
         </div>
 
-        <button style={S.btn} onClick={savePricing} disabled={saving}>
-          {saving ? "Saving…" : "💾 Save Pricing"}
+        <button style={S.btn} onClick={savePricing} disabled={saving || !backendReady}>
+          {saving ? "Saving…" : !backendReady ? "Deploy backend first" : "💾 Save Pricing"}
         </button>
       </div>
     </div>
