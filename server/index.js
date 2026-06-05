@@ -62,10 +62,11 @@ const uploadRoutes     = require('./routes/upload');
 const admissionRoutes  = require('./routes/admission');
 const workingDayRoutes = require('./routes/working-days');
 
-const platformAuthRoutes  = require('./routes/platform-auth');
-const platformRoutes      = require('./routes/platform');
-const academyConfigRoutes = require('./routes/academy-config');
-const onboardingRoutes    = require('./routes/onboarding');
+const platformAuthRoutes    = require('./routes/platform-auth');
+const platformRoutes        = require('./routes/platform');
+const academyConfigRoutes   = require('./routes/academy-config');
+const onboardingRoutes      = require('./routes/onboarding');
+const landingSettingsRoutes = require('./routes/landing-settings');
 
 // Existing acadfee routes
 app.use('/api/auth',         authRoutes);
@@ -84,10 +85,12 @@ app.use('/api/admission',    admissionRoutes);
 app.use('/api/working-days', workingDayRoutes);
 
 // Exponent platform routes
-app.use('/platform/auth',    platformAuthRoutes); // has own authRateLimit inside
-app.use('/platform',         platformRoutes);
-app.use('/api/academy',      academyConfigRoutes);
-app.use('/api/onboarding',   onboardingRoutes);   // has own authRateLimit inside
+app.use('/platform/auth',     platformAuthRoutes); // has own authRateLimit inside
+app.use('/platform',          platformRoutes);
+app.use('/api/academy',       academyConfigRoutes);
+app.use('/api/onboarding',    onboardingRoutes);   // has own authRateLimit inside
+app.use('/api',               landingSettingsRoutes); // /api/public-settings
+app.use('/platform/settings', landingSettingsRoutes); // /platform/settings/landing
 
 app.get('/api/public-stats', async (req, res) => {
   try {

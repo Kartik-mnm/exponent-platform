@@ -427,46 +427,15 @@ function Hero({ onGetStarted }) {
 function Stats() {
   const [data, setData] = useState({
     academies: { v: "2,400", s: "+" },
-    students: { v: "4.8", s: "L" },
-    fees: { v: "₹120", s: "Cr" }
+    students:  { v: "4.8",   s: "L" },
+    fees:      { v: "₹120",  s: "Cr" }
   });
 
   useEffect(() => {
-    fetch("https://api.exponentgrow.in/api/public-stats")
+    fetch("https://api.exponentgrow.in/api/public-settings")
       .then(r => r.json())
-      .then(res => {
-        if (res && typeof res.academiesCount === 'number') {
-          const formattedAcademies = {
-            v: res.academiesCount.toLocaleString('en-IN'),
-            s: res.academiesCount >= 1000 ? "+" : ""
-          };
-          
-          let formattedStudents;
-          if (res.studentsCount >= 100000) {
-            formattedStudents = { v: (res.studentsCount / 100000).toFixed(1), s: "L" };
-          } else {
-            formattedStudents = { v: res.studentsCount.toLocaleString('en-IN'), s: "" };
-          }
-
-          let formattedFees;
-          if (res.feesTotal >= 10000000) {
-            formattedFees = { v: "₹" + (res.feesTotal / 10000000).toFixed(1), s: "Cr" };
-          } else if (res.feesTotal >= 100000) {
-            formattedFees = { v: "₹" + (res.feesTotal / 100000).toFixed(1), s: "L" };
-          } else {
-            formattedFees = { v: "₹" + res.feesTotal.toLocaleString('en-IN'), s: "" };
-          }
-
-          setData({
-            academies: formattedAcademies,
-            students: formattedStudents,
-            fees: formattedFees
-          });
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch public stats:", err);
-      });
+      .then(res => { if (res && res.stats) setData(res.stats); })
+      .catch(() => {});
   }, []);
 
   const statsItems = [
@@ -598,7 +567,7 @@ function HowItWorks() {
 /* ─────────────────────────────────────────
    PRICING
 ───────────────────────────────────────── */
-const PLANS = [
+const DEFAULT_PLANS = [
   {
     name: "Starter", price: 999, popular: false,
     desc: "For small institutes getting started.",
@@ -612,6 +581,14 @@ const PLANS = [
 ];
 
 function Pricing({ onGetStarted }) {
+  const [plans, setPlans] = useState(DEFAULT_PLANS);
+
+  useEffect(() => {
+    fetch("https://api.exponentgrow.in/api/public-settings")
+      .then(r => r.json())
+      .then(res => { if (res && res.pricing) setPlans(res.pricing); })
+      .catch(() => {});
+  }, []);
   return (
     <section id="pricing" style={{ padding: "clamp(60px, 8vw, 120px) 6%", borderBottom: `1px solid ${T.bdr}` }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -621,7 +598,7 @@ function Pricing({ onGetStarted }) {
         </h2>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, alignItems: "stretch" }}>
-          {PLANS.map((p, i) => (
+          {plans.map((p, i) => (
             <div key={i} style={{
               background: T.bg2, border: `1px solid ${p.popular ? T.a : T.bdr}`,
               borderRadius: 16, padding: "clamp(24px, 5vw, 40px)",

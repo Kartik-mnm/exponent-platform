@@ -11,12 +11,13 @@ import Settings      from "./pages/Settings";
 import GetStarted    from "./pages/GetStarted";
 import Signup        from "./pages/Signup";
 import SignupSuccess  from "./pages/SignupSuccess";
-import AuditLog      from "./pages/AuditLog";
-import Leads         from "./pages/Leads";
-import Revenue       from "./pages/Revenue";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import Contact       from "./pages/Contact";
+import AuditLog        from "./pages/AuditLog";
+import Leads           from "./pages/Leads";
+import Revenue         from "./pages/Revenue";
+import PrivacyPolicy   from "./pages/PrivacyPolicy";
+import TermsOfService  from "./pages/TermsOfService";
+import Contact         from "./pages/Contact";
+import LandingSettings from "./pages/LandingSettings";
 import "./index.css";
 
 const NAV = [
@@ -26,8 +27,9 @@ const NAV = [
   { id: "subscriptions", label: "Subscriptions", icon: "💳",  group: "main" },
   { id: "revenue",       label: "Revenue",       icon: "💰",  group: "main" },
   { id: "analytics",    label: "Analytics",     icon: "📊",  group: "main" },
-  { id: "audit",        label: "Audit Log",     icon: "📋",  group: "system" },
-  { id: "settings",     label: "Settings",      icon: "⚙",   group: "system" },
+  { id: "audit",           label: "Audit Log",        icon: "📋",  group: "system" },
+  { id: "landing-settings", label: "Landing Page",      icon: "🌐",  group: "system" },
+  { id: "settings",         label: "Settings",          icon: "⚙",   group: "system" },
 ];
 
 const PAGE_META = {
@@ -37,8 +39,9 @@ const PAGE_META = {
   subscriptions: { title: "Subscriptions",  sub: "Plans, billing & expiry management" },
   revenue:       { title: "Revenue",        sub: "Manual log of all payments received" },
   analytics:     { title: "Analytics",      sub: "Usage stats & growth insights" },
-  audit:         { title: "Audit Log",      sub: "All platform actions tracked" },
-  settings:      { title: "Settings",       sub: "Platform configuration" },
+  audit:            { title: "Audit Log",        sub: "All platform actions tracked" },
+  "landing-settings": { title: "Landing Page",    sub: "Edit stats & pricing shown on exponentgrow.in" },
+  settings:           { title: "Settings",        sub: "Platform configuration" },
 };
 
 const ACADEMY_APP = "https://app.exponentgrow.in";
@@ -106,6 +109,7 @@ function Shell() {
     dashboard: Dashboard, academies: Academies, leads: Leads,
     subscriptions: Subscriptions, revenue: Revenue,
     analytics: Analytics, settings: Settings, audit: AuditLog,
+    "landing-settings": LandingSettings,
   };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
