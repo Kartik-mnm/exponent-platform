@@ -1,6 +1,6 @@
-// ── Revenue Log Page ───────────────────────────────────────────────────────────────
 import { useState, useEffect } from "react";
 import API from "../api";
+import { useAuth } from "../context/AuthContext";
 
 const fmt = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 
@@ -117,6 +117,7 @@ function AddEntryModal({ academies, onClose, onSaved }) {
 }
 
 export default function Revenue() {
+  const { admin } = useAuth();
   const [entries, setEntries]       = useState([]);
   const [academies, setAcademies]   = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -164,9 +165,11 @@ export default function Revenue() {
           <div className="page-title">Revenue</div>
           <div className="page-sub">Manual log of all payments received from academies</div>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-          + Log Payment
-        </button>
+        {admin?.role !== "viewer" && (
+          <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
+            + Log Payment
+          </button>
+        )}
       </div>
 
       {/* Summary cards */}
@@ -245,14 +248,16 @@ export default function Revenue() {
                       {e.note || "—"}
                     </td>
                     <td>
-                      <button
-                        className="btn btn-sm"
-                        style={{ background: "rgba(239,68,68,0.08)", color: "var(--red)", border: "none" }}
-                        onClick={() => handleDelete(e.id)}
-                        disabled={deletingId === e.id}
-                      >
-                        {deletingId === e.id ? "..." : "🗑"}
-                      </button>
+                      {admin?.role !== "viewer" && (
+                        <button
+                          className="btn btn-sm"
+                          style={{ background: "rgba(239,68,68,0.08)", color: "var(--red)", border: "none" }}
+                          onClick={() => handleDelete(e.id)}
+                          disabled={deletingId === e.id}
+                        >
+                          {deletingId === e.id ? "..." : "🗑"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import API from "../api";
+import { useAuth } from "../context/AuthContext";
 import AcademyWizard from "../components/AcademyWizard";
 import AcademyEditModal from "../components/AcademyEditModal";
 
@@ -75,6 +76,7 @@ function AdminsModal({ academy, onClose }) {
 }
 
 export default function Academies() {
+  const { admin } = useAuth();
   const [academies, setAcademies]           = useState([]);
   const [loading, setLoading]               = useState(true);
   const [search, setSearch]                 = useState("");
@@ -142,7 +144,9 @@ export default function Academies() {
           <div className="page-title">Academies</div>
           <div className="page-sub">{academies.length} total · {academies.filter(a => a.is_active).length} active</div>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowWizard(true)}>+ New Academy</button>
+        {admin?.role !== "viewer" && (
+          <button className="btn btn-primary" onClick={() => setShowWizard(true)}>+ New Academy</button>
+        )}
       </div>
 
       <div className="section">
@@ -195,25 +199,29 @@ export default function Academies() {
                           ) : <span style={{ color: "var(--text3)", fontSize: 12 }}>—</span>}
                         </td>
                         <td>
-                          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                            {/* Quick extend */}
-                            <button
-                              className="btn btn-sm"
-                              style={{ background: "rgba(16,185,129,0.12)", color: "var(--green)", border: "1px solid rgba(16,185,129,0.25)", fontWeight: 700 }}
-                              onClick={() => { setExtendTarget(a); setExtendDays(30); setExtendMsg(""); }}
-                            >
-                              +30d
-                            </button>
-                            <button className="btn btn-ghost btn-sm" onClick={() => setEditTarget(a)}>✎ Edit</button>
-                            <button className="btn btn-ghost btn-sm" onClick={() => setAdminsTarget(a)}>👤</button>
-                            {a.is_active ? (
-                              <button className="btn btn-sm" style={{ background: "rgba(234,179,8,0.12)", color: "#ca8a04" }} onClick={() => setConfirmSuspend(a)}>⏸</button>
-                            ) : (
-                              <button className="btn btn-success btn-sm" onClick={() => handleReactivate(a.id)}>▶</button>
-                            )}
-                            <button className="btn btn-sm" style={{ background: "rgba(239,68,68,0.12)", color: "var(--red)" }}
-                              onClick={() => { setConfirmDelete(a); setDeleteInput(""); }}>🗑</button>
-                          </div>
+                          {admin?.role !== "viewer" ? (
+                            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                              {/* Quick extend */}
+                              <button
+                                className="btn btn-sm"
+                                style={{ background: "rgba(16,185,129,0.12)", color: "var(--green)", border: "1px solid rgba(16,185,129,0.25)", fontWeight: 700 }}
+                                onClick={() => { setExtendTarget(a); setExtendDays(30); setExtendMsg(""); }}
+                              >
+                                +30d
+                              </button>
+                              <button className="btn btn-ghost btn-sm" onClick={() => setEditTarget(a)}>✎ Edit</button>
+                              <button className="btn btn-ghost btn-sm" onClick={() => setAdminsTarget(a)}>👤</button>
+                              {a.is_active ? (
+                                <button className="btn btn-sm" style={{ background: "rgba(234,179,8,0.12)", color: "#ca8a04" }} onClick={() => setConfirmSuspend(a)}>⏸</button>
+                              ) : (
+                                <button className="btn btn-success btn-sm" onClick={() => handleReactivate(a.id)}>▶</button>
+                              )}
+                              <button className="btn btn-sm" style={{ background: "rgba(239,68,68,0.12)", color: "var(--red)" }}
+                                onClick={() => { setConfirmDelete(a); setDeleteInput(""); }}>🗑</button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 12, color: "var(--text3)" }}>Read Only</span>
+                          )}
                         </td>
                       </tr>
                     );
