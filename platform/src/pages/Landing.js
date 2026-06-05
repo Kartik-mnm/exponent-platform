@@ -426,9 +426,9 @@ function Hero({ onGetStarted }) {
 ───────────────────────────────────────── */
 function Stats() {
   const [data, setData] = useState({
-    academies: { v: "2,400", s: "+" },
-    students:  { v: "4.8",   s: "L" },
-    fees:      { v: "₹120",  s: "Cr" }
+    academies: { v: "5",    s: "" },
+    students:  { v: "800",  s: "+" },
+    fees:      { v: "₹10.5", s: "L" }
   });
 
   useEffect(() => {

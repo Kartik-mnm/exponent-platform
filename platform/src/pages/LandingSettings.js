@@ -31,9 +31,9 @@ export default function LandingSettings() {
   const [msg, setMsg]           = useState(null);
   const [backendReady, setBackendReady] = useState(true);
   const [stats, setStats]       = useState({
-    academies: { v: "2,400", s: "+" },
-    students:  { v: "4.8",   s: "L" },
-    fees:      { v: "₹120",  s: "Cr" },
+    academies: { v: "5",    s: "" },
+    students:  { v: "800",  s: "+" },
+    fees:      { v: "₹10.5", s: "L" },
   });
   const [pricing, setPricing] = useState([
     { name: "Starter", price: 999, popular: false, desc: "For small institutes getting started.", features: ["Up to 100 students", "1 branch & 2 staff members", "Basic fee tracking", "Email support"] },
