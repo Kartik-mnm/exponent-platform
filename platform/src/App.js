@@ -18,6 +18,7 @@ import PrivacyPolicy   from "./pages/PrivacyPolicy";
 import TermsOfService  from "./pages/TermsOfService";
 import Contact         from "./pages/Contact";
 import LandingSettings from "./pages/LandingSettings";
+import Diagnostics     from "./pages/Diagnostics";
 import "./index.css";
 
 const NAV = [
@@ -26,10 +27,11 @@ const NAV = [
   { id: "leads",         label: "Leads",         icon: "📬",  group: "main" },
   { id: "subscriptions", label: "Subscriptions", icon: "💳",  group: "main" },
   { id: "revenue",       label: "Revenue",       icon: "💰",  group: "main" },
-  { id: "analytics",    label: "Analytics",     icon: "📊",  group: "main" },
-  { id: "audit",           label: "Audit Log",        icon: "📋",  group: "system" },
-  { id: "landing-settings", label: "Landing Page",      icon: "🌐",  group: "system" },
-  { id: "settings",         label: "Settings",          icon: "⚙",   group: "system" },
+  { id: "analytics",     label: "Analytics",     icon: "📊",  group: "main" },
+  { id: "diagnostics",   label: "Diagnostics",   icon: "🩺",  group: "system" },
+  { id: "audit",         label: "Audit Log",     icon: "📋",  group: "system" },
+  { id: "landing-settings", label: "Landing Page",  icon: "🌐",  group: "system" },
+  { id: "settings",      label: "Settings",      icon: "⚙",   group: "system" },
 ];
 
 const PAGE_META = {
@@ -39,9 +41,10 @@ const PAGE_META = {
   subscriptions: { title: "Subscriptions",  sub: "Plans, billing & expiry management" },
   revenue:       { title: "Revenue",        sub: "Manual log of all payments received" },
   analytics:     { title: "Analytics",      sub: "Usage stats & growth insights" },
-  audit:            { title: "Audit Log",        sub: "All platform actions tracked" },
+  diagnostics:   { title: "Diagnostics",    sub: "Real-time system vitals & server logs" },
+  audit:         { title: "Audit Log",      sub: "All platform actions tracked" },
   "landing-settings": { title: "Landing Page",    sub: "Edit stats & pricing shown on exponentgrow.in" },
-  settings:           { title: "Settings",        sub: "Platform configuration" },
+  settings:      { title: "Settings",       sub: "Platform configuration" },
 };
 
 const ACADEMY_APP = "https://app.exponentgrow.in";
@@ -110,6 +113,7 @@ function Shell() {
     subscriptions: Subscriptions, revenue: Revenue,
     analytics: Analytics, settings: Settings, audit: AuditLog,
     "landing-settings": LandingSettings,
+    diagnostics: Diagnostics,
   };
   const Page  = pages[page] || Dashboard;
   const meta  = PAGE_META[page] || {};
