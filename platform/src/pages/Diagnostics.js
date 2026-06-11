@@ -76,6 +76,16 @@ export default function Diagnostics() {
     return `${m} mins`;
   };
 
+  const getCronStatus = (success, lastRunStart) => {
+    if (success === true) return { text: "Success", class: "badge-green" };
+    if (success === false) return { text: "Failed", class: "badge-red" };
+    if (lastRunStart) return { text: "Running", class: "badge-blue" };
+    return { text: "Never Run", class: "badge-yellow" };
+  };
+
+  const jobStatus = getCronStatus(cron.lastJobRunSuccess, cron.lastJobRunStart);
+  const backupStatus = getCronStatus(cron.lastBackupRunSuccess, cron.lastBackupRunStart);
+
   return (
     <div>
       {msg && <div className="alert alert-danger" style={{ marginBottom: 20 }}>{msg}</div>}
@@ -184,8 +194,8 @@ export default function Diagnostics() {
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 13, fontWeight: 700 }}>Nightly Attendance & Alerts</span>
-                <span className={`badge ${cron.lastJobRunSuccess ? "badge-green" : "badge-yellow"}`} style={{ fontSize: 10 }}>
-                  {cron.lastJobRunSuccess ? "Success" : "Pending / Failed"}
+                <span className={`badge ${jobStatus.class}`} style={{ fontSize: 10 }}>
+                  {jobStatus.text}
                 </span>
               </div>
               <div style={{ fontSize: 11, color: "var(--text3)" }}>
@@ -204,8 +214,8 @@ export default function Diagnostics() {
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 13, fontWeight: 700 }}>JSON DB Backup Email</span>
-                <span className={`badge ${cron.lastBackupRunSuccess ? "badge-green" : "badge-yellow"}`} style={{ fontSize: 10 }}>
-                  {cron.lastBackupRunSuccess ? "Success" : "Pending / Failed"}
+                <span className={`badge ${backupStatus.class}`} style={{ fontSize: 10 }}>
+                  {backupStatus.text}
                 </span>
               </div>
               <div style={{ fontSize: 11, color: "var(--text3)" }}>
